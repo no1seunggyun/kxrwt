@@ -1,0 +1,2902 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>결정나침반 — 당신의 선택에 방향을 더하다</title>
+  <meta name="description" content="사용자의 상황과 우선순위를 다각도로 분석하여 합리적인 결정을 돕는 의사결정 보조 웹 앱" />
+  <meta property="og:title" content="결정나침반 (DECISION COMPASS)" />
+  <meta property="og:description" content="당신의 선택에 방향을 더하다 — 우선순위 가중 분석, 미래 시뮬레이션, 후회 방지 체크" />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy-950: #0D172B;
+      --navy-900: #14213D;
+      --navy-800: #1E3158;
+      --navy-700: #2C4476;
+      --ivory-50: #FAF8F3;
+      --ivory-100: #F4F0E6;
+      --lavender-50: #F6F4FB;
+      --lavender-100: #EBE6F6;
+      --lavender-200: #D8CEF0;
+      --lavender-300: #BEB0E4;
+      --border-soft: #E4E0EE;
+      --border-input: #D8D3E6;
+      --text-primary: #14213D;
+      --text-secondary: #3D4A60;
+      --text-muted: #5A6578;
+      --danger: #DC2626;
+      --danger-bg: #FEF2F2;
+      --danger-border: #FECACA;
+      --success: #166534;
+      --success-bg: #F0FDF4;
+      --success-border: #BBF7D0;
+      --warn: #92400E;
+      --warn-bg: #FFFBEB;
+      --warn-border: #FDE68A;
+      --font-sans: "Noto Sans KR", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      --shadow-sm: 0 1px 3px rgba(20, 33, 61, 0.05), 0 1px 2px rgba(20, 33, 61, 0.03);
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      font-family: var(--font-sans);
+      background-color: var(--ivory-50);
+      color: var(--text-primary);
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--ivory-50);
+      color: var(--text-primary);
+      line-height: 1.55;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+    }
+
+    ::selection {
+      background-color: #E5DFF3;
+      color: var(--navy-900);
+    }
+
+    button, input, textarea, select {
+      font-family: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+      outline: 2px solid var(--navy-900);
+      outline-offset: 2px;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Layout Containers */
+    .container {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    .container-narrow {
+      max-width: 920px;
+      margin: 0 auto;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    .container-results {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    /* Header (Strict 3-zone Top Bar Contract) */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background-color: rgba(250, 248, 243, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .header-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+    }
+
+    .brand-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: none;
+      border: none;
+      padding: 4px;
+      border-radius: 8px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      color: var(--navy-900);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .desktop-nav {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .nav-link {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 6px 2px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #4B5568;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: color 150ms ease, border-color 150ms ease;
+    }
+
+    .nav-link:hover {
+      color: var(--navy-900);
+      border-bottom-color: var(--lavender-300);
+    }
+
+    .nav-link.active {
+      color: var(--navy-900);
+      border-bottom-color: var(--navy-900);
+      font-weight: 600;
+    }
+
+    .mobile-nav {
+      display: none;
+      border-top: 1px solid var(--border-soft);
+      padding: 6px 12px;
+      background-color: var(--ivory-50);
+      justify-content: space-around;
+      gap: 6px;
+    }
+
+    .mobile-nav-link {
+      background: none;
+      border: none;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #4B5568;
+      white-space: nowrap;
+      min-height: 36px;
+    }
+
+    .mobile-nav-link.active {
+      background-color: var(--lavender-100);
+      color: var(--navy-900);
+      font-weight: 600;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: var(--radius-lg);
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+      border: 1px solid transparent;
+      transition: background-color 150ms cubic-bezier(0.16, 1, 0.3, 1), border-color 150ms ease, color 150ms ease;
+    }
+
+    .btn:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background-color: var(--navy-900);
+      color: var(--ivory-50);
+      padding: 12px 24px;
+      font-size: 15px;
+      min-height: 46px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--navy-800);
+    }
+
+    .btn-header {
+      background-color: var(--navy-900);
+      color: var(--ivory-50);
+      padding: 8px 16px;
+      font-size: 13px;
+      min-height: 40px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-header:hover {
+      background-color: var(--navy-800);
+    }
+
+    .btn-secondary {
+      background-color: #FFFFFF;
+      color: var(--navy-900);
+      border-color: var(--border-input);
+      padding: 12px 20px;
+      font-size: 15px;
+      min-height: 46px;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background-color: var(--lavender-50);
+    }
+
+    .btn-lavender {
+      background-color: var(--lavender-100);
+      color: var(--navy-900);
+      border-color: var(--lavender-200);
+      padding: 10px 18px;
+      font-size: 14px;
+      min-height: 42px;
+    }
+
+    .btn-lavender:hover:not(:disabled) {
+      background-color: #DFD7F2;
+    }
+
+    .btn-sm {
+      padding: 8px 14px;
+      font-size: 13px;
+      min-height: 36px;
+      border-radius: 10px;
+    }
+
+    .btn-danger-ghost {
+      background: transparent;
+      color: #6B7280;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      min-height: 34px;
+      border-radius: 8px;
+    }
+
+    .btn-danger-ghost:hover:not(:disabled) {
+      color: var(--danger);
+      background-color: var(--danger-bg);
+    }
+
+    .btn-danger-solid {
+      background-color: var(--danger);
+      color: #FFFFFF;
+      padding: 8px 12px;
+      font-size: 12px;
+      min-height: 34px;
+      border-radius: 8px;
+    }
+
+    .btn-danger-solid:hover {
+      background-color: #B91C1C;
+    }
+
+    /* Main Content */
+    main {
+      flex: 1;
+    }
+
+    .page-section {
+      padding-top: 40px;
+      padding-bottom: 48px;
+    }
+
+    .stack-lg > * + * { margin-top: 48px; }
+    .stack-md > * + * { margin-top: 32px; }
+    .stack-sm > * + * { margin-top: 16px; }
+    .stack-xs > * + * { margin-top: 8px; }
+
+    /* Cards & Surfaces */
+    .card {
+      background-color: #FFFFFF;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-lavender {
+      background-color: var(--lavender-50);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-ivory {
+      background-color: rgba(244, 240, 230, 0.72);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+    }
+
+    .card-navy {
+      background-color: var(--navy-900);
+      color: var(--ivory-50);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Typography */
+    .h1-hero {
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.025em;
+      color: var(--navy-900);
+      margin: 0;
+      text-wrap: balance;
+    }
+
+    .h1-page {
+      font-size: clamp(1.5rem, 2.8vw, 1.95rem);
+      font-weight: 700;
+      line-height: 1.28;
+      letter-spacing: -0.02em;
+      color: var(--navy-900);
+      margin: 0;
+    }
+
+    .h2-section {
+      font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--navy-900);
+      margin: 0;
+    }
+
+    .h3-card {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--navy-900);
+      margin: 0;
+    }
+
+    .kicker {
+      font-size: 13px;
+      font-weight: 600;
+      color: #4B5568;
+      letter-spacing: 0.02em;
+      margin: 0;
+    }
+
+    .lead {
+      font-size: 17px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      max-width: 60ch;
+      margin: 0;
+    }
+
+    .muted {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .text-link {
+      background: none;
+      border: none;
+      padding: 4px 2px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--navy-900);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      text-decoration-color: var(--lavender-300);
+    }
+
+    .text-link:hover {
+      text-decoration-color: var(--navy-900);
+    }
+
+    /* Grids */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 7fr 5fr;
+      gap: 44px;
+      align-items: stretch;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .grid-reason {
+      display: grid;
+      grid-template-columns: 7fr 5fr;
+      gap: 24px;
+    }
+
+    /* Hero Illustration Container */
+    .hero-visual {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-soft);
+      background: linear-gradient(145deg, #F6F4FB 0%, #FAF8F3 52%, #EFEADF 100%);
+      overflow: hidden;
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .feature-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background-color: var(--lavender-100);
+      color: var(--navy-900);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-lavender .feature-icon-box {
+      background-color: #FFFFFF;
+      border: 1px solid var(--border-soft);
+    }
+
+    /* Form Controls */
+    .field-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--navy-900);
+      margin-bottom: 6px;
+    }
+
+    .required-mark {
+      color: #B91C1C;
+    }
+
+    .input, .textarea, .select {
+      width: 100%;
+      padding: 11px 14px;
+      font-size: 14px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-input);
+      background-color: rgba(250, 248, 243, 0.65);
+      color: var(--navy-900);
+      transition: border-color 150ms ease, background-color 150ms ease;
+    }
+
+    .input:focus, .textarea:focus, .select:focus {
+      background-color: #FFFFFF;
+      border-color: var(--navy-900);
+    }
+
+    .input.error, .textarea.error {
+      border-color: var(--danger);
+    }
+
+    .error-text {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--danger);
+      margin: 4px 0 0;
+    }
+
+    .alert-box {
+      border-radius: var(--radius-xl);
+      padding: 16px 20px;
+      font-size: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .alert-danger {
+      background-color: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      color: #991B1B;
+      flex-direction: column;
+    }
+
+    .alert-info {
+      background-color: var(--ivory-100);
+      border: 1px solid var(--border-soft);
+      color: var(--text-secondary);
+    }
+
+    .alert-lavender {
+      background-color: var(--lavender-50);
+      border: 1px solid var(--lavender-200);
+      color: var(--navy-900);
+    }
+
+    .alert-warn {
+      background-color: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      color: var(--warn);
+    }
+
+    .alert-success {
+      background-color: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success);
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* Slider */
+    input[type="range"].compass-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 9999px;
+      background: var(--border-soft);
+      flex: 1;
+    }
+
+    input[type="range"].compass-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 9999px;
+      background: var(--navy-900);
+      border: 2px solid var(--ivory-50);
+      box-shadow: 0 1px 4px rgba(20, 33, 61, 0.25);
+      cursor: pointer;
+    }
+
+    input[type="range"].compass-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 9999px;
+      background: var(--navy-900);
+      border: 2px solid var(--ivory-50);
+      box-shadow: 0 1px 4px rgba(20, 33, 61, 0.25);
+      cursor: pointer;
+    }
+
+    /* Priority Row */
+    .priority-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 16px 0;
+      border-bottom: 1px solid #F0EDF6;
+    }
+
+    .priority-row:first-child { padding-top: 0; }
+    .priority-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    /* Table */
+    .table-wrap {
+      background-color: #FFFFFF;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+
+    table.compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 660px;
+      text-align: left;
+    }
+
+    table.compare-table th {
+      background-color: var(--lavender-50);
+      border-bottom: 1px solid var(--border-soft);
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy-900);
+    }
+
+    table.compare-table td {
+      padding: 14px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid #F0EDF6;
+      vertical-align: top;
+      color: var(--text-secondary);
+    }
+
+    table.compare-table tr:last-child td {
+      border-bottom: none;
+      background-color: var(--ivory-50);
+      font-weight: 700;
+      color: var(--navy-900);
+    }
+
+    /* Score Bars */
+    .bar-track {
+      height: 10px;
+      width: 100%;
+      background-color: #F0EDF6;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 300ms ease;
+    }
+
+    /* Segmented Tabs */
+    .tablist {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 6px;
+      background-color: rgba(235, 230, 246, 0.72);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+    }
+
+    .tab-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      min-height: 38px;
+      white-space: nowrap;
+      transition: background-color 150ms ease, color 150ms ease;
+    }
+
+    .tab-btn.active {
+      background-color: var(--navy-900);
+      color: var(--ivory-50);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Flat simulation inner blocks (no nested borders) */
+    .sim-block-ivory {
+      background-color: rgba(250, 248, 243, 0.85);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+
+    .sim-block-lavender {
+      background-color: rgba(246, 244, 251, 0.85);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+
+    /* Footer */
+    .site-footer {
+      border-top: 1px solid var(--border-soft);
+      background-color: var(--ivory-50);
+      padding: 24px 0;
+      margin-top: 48px;
+    }
+
+    .footer-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Utility flex */
+    .flex-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .flex-between { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .divider-top { border-top: 1px solid var(--border-soft); padding-top: 16px; }
+    .divider-bottom { border-bottom: 1px solid var(--border-soft); padding-bottom: 14px; }
+
+    @keyframes pulseSoft {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.72; transform: scale(0.96); }
+    }
+
+    .animate-compass {
+      animation: pulseSoft 1.4s ease-in-out infinite;
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 900px) {
+      .hero-grid, .grid-reason {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .desktop-nav {
+        display: none;
+      }
+      .mobile-nav {
+        display: flex;
+      }
+      .header-inner {
+        padding: 0 16px;
+        gap: 12px;
+        height: 58px;
+      }
+      .container, .container-narrow, .container-results {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .priority-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .card, .card-lavender, .card-navy {
+        padding: 20px;
+      }
+      .page-section {
+        padding-top: 28px;
+        padding-bottom: 36px;
+      }
+      .hero-visual {
+        min-height: 220px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <main id="app-main"></main>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p style="margin:0;">결정나침반 (DECISION COMPASS) · 당신의 선택에 방향을 더하다</p>
+      <p style="margin:0;">분석 결과는 의사결정을 돕는 참고용이며 최종 선택은 사용자의 판단에 따릅니다.</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* =========================================================
+       * 1. SVG Icons & Editorial Compass Illustration
+       * ========================================================= */
+      function compassSvg(sizeClass) {
+        var cls = sizeClass || '';
+        return '<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="' + cls + '" style="width:28px;height:28px;flex-shrink:0;" aria-hidden="true">' +
+          '<circle cx="18" cy="18" r="16" stroke="#14213D" stroke-width="2" fill="#FAF8F3"/>' +
+          '<circle cx="18" cy="18" r="11.5" stroke="#BEB0E4" stroke-width="1.2"/>' +
+          '<path d="M18 6.5L21.2 18L18 29.5L14.8 18L18 6.5Z" fill="#14213D"/>' +
+          '<path d="M18 6.5L21.2 18H14.8L18 6.5Z" fill="#2C4476"/>' +
+          '<circle cx="18" cy="18" r="2.2" fill="#FAF8F3" stroke="#14213D" stroke-width="1.4"/>' +
+          '</svg>';
+      }
+
+      function heroIllustrationSvg() {
+        return '<svg viewBox="0 0 480 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="아이보리 노트와 함께 놓인 네이비와 브라스 나침반 일러스트" style="width:100%;height:100%;max-height:360px;display:block;">' +
+          '<rect width="480" height="360" fill="url(#deskGrad)"/>' +
+          '<defs>' +
+            '<linearGradient id="deskGrad" x1="0" y1="0" x2="480" y2="360" gradientUnits="userSpaceOnUse">' +
+              '<stop offset="0%" stop-color="#F6F4FB"/>' +
+              '<stop offset="55%" stop-color="#FAF8F3"/>' +
+              '<stop offset="100%" stop-color="#EDE7DA"/>' +
+            '</linearGradient>' +
+            '<linearGradient id="brassRim" x1="120" y1="100" x2="260" y2="260" gradientUnits="userSpaceOnUse">' +
+              '<stop offset="0%" stop-color="#D4B475"/>' +
+              '<stop offset="50%" stop-color="#B08D4B"/>' +
+              '<stop offset="100%" stop-color="#876A32"/>' +
+            '</linearGradient>' +
+          '</defs>' +
+          '<!-- Architectural Desk Paper -->' +
+          '<rect x="44" y="42" width="392" height="276" rx="14" fill="#FFFFFF" stroke="#E4E0EE" stroke-width="1.5"/>' +
+          '<line x1="74" y1="90" x2="210" y2="90" stroke="#EBE6F6" stroke-width="2" stroke-linecap="round"/>' +
+          '<line x1="74" y1="108" x2="176" y2="108" stroke="#F0EDF6" stroke-width="2" stroke-linecap="round"/>' +
+          '<!-- Open Navy Notebook on Right -->' +
+          '<rect x="266" y="70" width="142" height="218" rx="10" fill="#14213D"/>' +
+          '<rect x="274" y="78" width="126" height="202" rx="6" fill="#FAF8F3"/>' +
+          '<line x1="292" y1="110" x2="380" y2="110" stroke="#D8CEF0" stroke-width="2" stroke-linecap="round"/>' +
+          '<line x1="292" y1="132" x2="368" y2="132" stroke="#E4E0EE" stroke-width="2" stroke-linecap="round"/>' +
+          '<line x1="292" y1="154" x2="375" y2="154" stroke="#E4E0EE" stroke-width="2" stroke-linecap="round"/>' +
+          '<line x1="292" y1="176" x2="352" y2="176" stroke="#E4E0EE" stroke-width="2" stroke-linecap="round"/>' +
+          '<rect x="292" y="202" width="84" height="44" rx="8" fill="#F6F4FB" stroke="#D8CEF0" stroke-width="1"/>' +
+          '<circle cx="310" cy="224" r="6" fill="#14213D"/>' +
+          '<line x1="324" y1="220" x2="364" y2="220" stroke="#14213D" stroke-width="2" stroke-linecap="round"/>' +
+          '<line x1="324" y1="230" x2="352" y2="230" stroke="#BEB0E4" stroke-width="2" stroke-linecap="round"/>' +
+          '<!-- Brass & Navy Compass -->' +
+          '<ellipse cx="176" cy="264" rx="76" ry="14" fill="#E4E0EE" opacity="0.55"/>' +
+          '<circle cx="172" cy="186" r="78" fill="url(#brassRim)"/>' +
+          '<circle cx="172" cy="186" r="68" fill="#14213D"/>' +
+          '<circle cx="172" cy="186" r="58" fill="#FAF8F3"/>' +
+          '<circle cx="172" cy="186" r="46" stroke="#D8CEF0" stroke-width="1.2" stroke-dasharray="3 4"/>' +
+          '<!-- Cardinal ticks -->' +
+          '<line x1="172" y1="133" x2="172" y2="142" stroke="#14213D" stroke-width="2.2" stroke-linecap="round"/>' +
+          '<line x1="172" y1="230" x2="172" y2="239" stroke="#8A94A6" stroke-width="1.8" stroke-linecap="round"/>' +
+          '<line x1="119" y1="186" x2="128" y2="186" stroke="#8A94A6" stroke-width="1.8" stroke-linecap="round"/>' +
+          '<line x1="216" y1="186" x2="225" y2="186" stroke="#8A94A6" stroke-width="1.8" stroke-linecap="round"/>' +
+          '<!-- Compass Needle -->' +
+          '<g transform="rotate(22 172 186)">' +
+            '<path d="M172 138L183 186H161L172 138Z" fill="#14213D"/>' +
+            '<path d="M172 234L183 186H161L172 234Z" fill="#BEB0E4"/>' +
+            '<circle cx="172" cy="186" r="6" fill="#FAF8F3" stroke="#14213D" stroke-width="2.4"/>' +
+          '</g>' +
+          '<!-- Compass Ring -->' +
+          '<circle cx="172" cy="98" r="10" stroke="url(#brassRim)" stroke-width="4" fill="none"/>' +
+        '</svg>';
+      }
+
+      var ICONS = {
+        arrowRight: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',
+        arrowLeft: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>',
+        history: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>',
+        scale: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>',
+        sparkles: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>',
+        shield: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>',
+        plus: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>',
+        trash: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
+        reset: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>',
+        alert: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+        info: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+        check: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>',
+        bookmark: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/><path d="m9 10 2 2 4-4"/></svg>',
+        home: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+        search: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+        edit: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>',
+        book: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
+        help: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>',
+        starFilled: '<svg width="16" height="16" viewBox="0 0 24 24" fill="#14213D" stroke="#14213D" stroke-width="2" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+        starEmpty: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+      };
+
+      /* =========================================================
+       * 2. Utilities, Presets, & LocalStorage
+       * ========================================================= */
+      var STORAGE_KEY = 'decision_compass_records_v1';
+
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function clone(obj) {
+        return JSON.parse(JSON.stringify(obj));
+      }
+
+      var DEFAULT_PRIORITIES = [
+        { id: 'cost', name: '비용', weight: 3, isDefault: true },
+        { id: 'time', name: '시간', weight: 3, isDefault: true },
+        { id: 'convenience', name: '편리함', weight: 3, isDefault: true },
+        { id: 'satisfaction', name: '만족도', weight: 4, isDefault: true },
+        { id: 'fun', name: '재미', weight: 3, isDefault: true },
+        { id: 'sustainability', name: '지속 가능성', weight: 4, isDefault: true }
+      ];
+
+      function createEmptyDilemma() {
+        return {
+          title: '',
+          situation: '',
+          options: [
+            { id: 'opt-1', name: '', features: '', costOrTime: '' },
+            { id: 'opt-2', name: '', features: '', costOrTime: '' }
+          ],
+          constraints: ''
+        };
+      }
+
+      var DILEMMA_PRESETS = [
+        {
+          id: 'laptop-choice',
+          label: '노트북 교체 선택',
+          dilemma: {
+            title: '재택 및 카페 작업용 노트북 교체 고민',
+            situation: '현재 쓰는 노트북이 4년 차라 배터리가 2시간밖에 가지 않고 팬 소음이 심해졌습니다. 주로 문서 작업, 웹 리서치, 화상 회의, 가끔 사진 보정을 하는데 예산을 과하게 쓰지 않으면서 3년 이상 편하게 쓰고 싶습니다.',
+            options: [
+              {
+                id: 'opt-1',
+                name: '맥북 에어 13인치 (16GB)',
+                features: '배터리 오래감, 팬리스 무소음, 가벼운 휴대성, 디스플레이와 트랙패드 완성도 높음',
+                costOrTime: '약 175만 원 / 적응 기간 약 1~2주'
+              },
+              {
+                id: 'opt-2',
+                name: '국산 경량 윈도우 울트라북',
+                features: '기존 업무 프로그램과 100% 호환, 포트 다양함, 1kg 미만 초경량, 익숙한 단축키',
+                costOrTime: '약 145만 원 / 바로 업무 투입 가능'
+              },
+              {
+                id: 'opt-3',
+                name: '기존 노트북 배터리 교체 후 1년 더 사용',
+                features: '지출을 크게 아낄 수 있음, 데이터 마이그레이션 불필요, 환경 부담 감소',
+                costOrTime: '약 12만 원 / 서비스센터 방문 반나절'
+              }
+            ],
+            constraints: '예산 상한 180만 원, 주 3회 이상 백팩에 넣고 이동하며 회사 문서(HWP/엑셀) 작업 빈도가 높음'
+          },
+          priorities: [
+            { id: 'cost', name: '비용', weight: 4, isDefault: true },
+            { id: 'time', name: '시간', weight: 3, isDefault: true },
+            { id: 'convenience', name: '편리함', weight: 5, isDefault: true },
+            { id: 'satisfaction', name: '만족도', weight: 4, isDefault: true },
+            { id: 'fun', name: '재미', weight: 2, isDefault: true },
+            { id: 'sustainability', name: '지속 가능성', weight: 4, isDefault: true }
+          ]
+        },
+        {
+          id: 'weekend-routine',
+          label: '퇴근 후 저녁 루틴',
+          dilemma: {
+            title: '평일 퇴근 후 저녁 시간 활용 방법 선택',
+            situation: '최근 야근이 줄어들어 평일 저녁 7시 30분부터 9시 30분까지 여유가 생겼습니다. 커리어 성장을 위한 공부를 시작할지, 떨어지는 체력을 먼저 끌어올릴지, 번아웃 예방을 위해 온전히 쉬어야 할지 고민입니다.',
+            options: [
+              {
+                id: 'opt-1',
+                name: '주 2회 오프라인 영어 회화 스터디',
+                features: '이직 및 업무에 직접 도움, 새로운 사람들과 교류, 강제성이 있어 꾸준히 참여 가능',
+                costOrTime: '월 18만 원 / 회당 왕복 포함 2시간 30분'
+              },
+              {
+                id: 'opt-2',
+                name: '집 근처 헬스장 주 3회 운동',
+                features: '수면 질 개선 및 체력 회복, 스트레스 해소, 장기적인 건강 투자',
+                costOrTime: '월 9만 원 / 회당 1시간 10분'
+              },
+              {
+                id: 'opt-3',
+                name: '집에서 자유로운 휴식 및 가벼운 독서',
+                features: '추가 비용 거의 없음, 피로 누적 방지, 컨디션에 따라 유연하게 조절 가능',
+                costOrTime: '월 3만 원 이내 / 이동 시간 0분'
+              }
+            ],
+            constraints: '아침 기상 시간이 6시 30분이라 밤 11시 전에는 취침해야 하며, 최근 어깨 결림과 피로감이 잦음'
+          },
+          priorities: [
+            { id: 'cost', name: '비용', weight: 3, isDefault: true },
+            { id: 'time', name: '시간', weight: 4, isDefault: true },
+            { id: 'convenience', name: '편리함', weight: 4, isDefault: true },
+            { id: 'satisfaction', name: '만족도', weight: 5, isDefault: true },
+            { id: 'fun', name: '재미', weight: 3, isDefault: true },
+            { id: 'sustainability', name: '지속 가능성', weight: 5, isDefault: true }
+          ]
+        }
+      ];
+
+      function loadRecords() {
+        try {
+          var raw = window.localStorage.getItem(STORAGE_KEY);
+          if (!raw) return [];
+          var parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed)) return [];
+          return parsed.filter(function (item) {
+            return item && typeof item.id === 'string' && typeof item.title === 'string' && Array.isArray(item.options);
+          });
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function persistRecords(records) {
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        } catch (e) {
+          // Ignore quota errors cleanly
+        }
+      }
+
+      function formatKoreanDate(isoString) {
+        try {
+          return new Intl.DateTimeFormat('ko-KR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }).format(new Date(isoString));
+        } catch (e) {
+          return String(isoString || '').slice(0, 10);
+        }
+      }
+
+      /* =========================================================
+       * 3. Validation & Scoring Engine
+       * ========================================================= */
+      function validateDilemmaInput(input) {
+        var errors = { options: {} };
+        var summary = [];
+
+        if (!input.title.trim()) {
+          errors.title = '고민의 제목을 입력해 주세요.';
+          summary.push('고민의 제목이 비어 있습니다.');
+        } else if (input.title.trim().length < 2) {
+          errors.title = '고민의 제목은 2글자 이상 입력해 주세요.';
+          summary.push('고민의 제목을 조금 더 구체적으로 입력해 주세요.');
+        }
+
+        if (!input.situation.trim()) {
+          errors.situation = '고민이 발생한 상황과 이유를 입력해 주세요.';
+          summary.push('고민의 상황과 이유가 비어 있습니다.');
+        } else if (input.situation.trim().length < 10) {
+          errors.situation = '정확한 분석을 위해 상황을 10글자 이상 구체적으로 작성해 주세요.';
+          summary.push('고민 상황을 10글자 이상으로 작성해 주세요.');
+        }
+
+        if (input.options.length < 2) {
+          errors.optionsGeneral = '비교할 선택지는 최소 2개 이상이어야 합니다.';
+          summary.push('비교할 선택지를 최소 2개 이상 등록해 주세요.');
+        } else if (input.options.length > 5) {
+          errors.optionsGeneral = '선택지는 최대 5개까지 비교할 수 있습니다.';
+          summary.push('선택지는 최대 5개까지만 비교할 수 있습니다.');
+        }
+
+        var seenNames = {};
+        input.options.forEach(function (opt, idx) {
+          var optErr = {};
+          var tName = opt.name.trim();
+          var tFeatures = opt.features.trim();
+
+          if (!tName) {
+            optErr.name = '선택지 ' + (idx + 1) + '의 이름을 입력해 주세요.';
+            summary.push('선택지 ' + (idx + 1) + '의 이름이 비어 있습니다.');
+          } else if (seenNames[tName.toLowerCase()]) {
+            optErr.name = '서로 다른 이름의 선택지를 입력해 주세요.';
+            summary.push("중복된 선택지 이름('" + tName + "')이 있습니다.");
+          } else {
+            seenNames[tName.toLowerCase()] = true;
+          }
+
+          if (!tFeatures) {
+            optErr.features = '선택지 ' + (idx + 1) + '의 특징과 장점을 입력해 주세요.';
+            summary.push('선택지 ' + (idx + 1) + '의 특징과 장점이 비어 있습니다.');
+          }
+
+          if (optErr.name || optErr.features) {
+            errors.options[opt.id] = optErr;
+          }
+        });
+
+        return {
+          isValid: summary.length === 0,
+          errors: errors,
+          summaryMessages: summary
+        };
+      }
+
+      function validateNewPriorityName(name, existing) {
+        var trimmed = name.trim();
+        if (!trimmed) return '추가할 기준 이름을 입력해 주세요.';
+        if (trimmed.length > 20) return '기준 이름은 20글자 이내로 입력해 주세요.';
+        var dup = existing.some(function (p) {
+          return p.name.trim().toLowerCase() === trimmed.toLowerCase();
+        });
+        if (dup) return '이미 같은 이름의 기준이 목록에 있습니다.';
+        return null;
+      }
+
+      function calculateWeightShares(priorities) {
+        var total = priorities.reduce(function (acc, p) {
+          return acc + Math.max(1, Math.min(5, p.weight));
+        }, 0);
+        if (total === 0) {
+          return priorities.map(function (p) {
+            return Object.assign({}, p, { sharePercent: 0 });
+          });
+        }
+        return priorities.map(function (p) {
+          var w = Math.max(1, Math.min(5, p.weight));
+          return Object.assign({}, p, { sharePercent: Math.round((w / total) * 1000) / 10 });
+        });
+      }
+
+      function calculateWeightedScore(criterionScores, priorities) {
+        var weightedSum = 0;
+        var weightTotal = 0;
+        var scoredCount = 0;
+
+        criterionScores.forEach(function (item) {
+          var priority = priorities.find(function (p) {
+            return p.id === item.criterionId || p.name.trim() === item.criterionName.trim();
+          });
+          if (!priority) return;
+
+          if (!item.insufficientInfo && typeof item.score === 'number' && !isNaN(item.score)) {
+            var cScore = Math.min(5, Math.max(1, item.score));
+            var cWeight = Math.min(5, Math.max(1, priority.weight));
+            weightedSum += cScore * cWeight;
+            weightTotal += cWeight;
+            scoredCount += 1;
+          }
+        });
+
+        if (weightTotal === 0 || scoredCount === 0) {
+          return { weightedScore: null, scoredCriteriaCount: 0, totalCriteriaCount: priorities.length };
+        }
+
+        return {
+          weightedScore: Math.round((weightedSum / weightTotal) * 100) / 100,
+          scoredCriteriaCount: scoredCount,
+          totalCriteriaCount: priorities.length
+        };
+      }
+
+      function detectSensitiveDomain(title, situation, constraints) {
+        var combined = (title + ' ' + situation + ' ' + (constraints || '')).toLowerCase();
+        var groups = [
+          { cat: '의료·건강', words: ['수술', '병원', '치료', '약물', '진단', '질환', '시술', '의사', '치과', '정신과', '처방'] },
+          { cat: '법률·계약', words: ['소송', '고소', '계약서', '법률', '변호사', '합의금', '분쟁', '위자료', '임대차', '해고'] },
+          { cat: '금융·투자', words: ['주식', '코인', '가상화폐', '대출', '부동산 투자', '청약', '펀드', '적금', '연금', '세금', '전세자금'] }
+        ];
+        var matched = groups.filter(function (g) {
+          return g.words.some(function (w) { return combined.indexOf(w) !== -1; });
+        }).map(function (g) { return g.cat; });
+
+        if (matched.length === 0) return null;
+        return '입력하신 고민에 ' + matched.join(', ') + ' 관련 판단 요소가 포함되어 있습니다. 본 분석은 생각을 정리하기 위한 참고 자료일 뿐이므로, 실제 실행 전 반드시 해당 분야의 전문가(의사, 변호사, 공인 재무설계사 등)와 상담하시기 바랍니다.';
+      }
+
+      /* =========================================================
+       * 4. Context-Aware Decision & Simulation Engine (Client-side)
+       * ========================================================= */
+      function buildClarifyingQuestions(dilemma, priorities) {
+        var questions = [];
+        var missingCost = dilemma.options.some(function (o) { return !o.costOrTime.trim(); });
+        var sorted = priorities.slice().sort(function (a, b) { return b.weight - a.weight; });
+        var topPriority = sorted[0] ? sorted[0].name : '만족도';
+
+        if (missingCost) {
+          questions.push('예상 비용이나 소요 시간이 비어 있는 선택지가 있습니다. 대략적인 예산이나 투자 가능한 시간 범위가 있으신가요?');
+        }
+        if (!dilemma.constraints.trim()) {
+          questions.push('이 결정을 내릴 때 절대 포기할 수 없는 조건이나 피하고 싶은 제약사항이 있다면 무엇인가요?');
+        }
+        if (dilemma.situation.trim().length < 45) {
+          questions.push('가장 중요하게 보시는 "' + topPriority + '" 기준에서 이번 선택이 앞으로 어떤 변화를 주길 바라시나요?');
+        }
+
+        return questions.slice(0, 3);
+      }
+
+      function parseEstimatedCostInManwon(text) {
+        if (!text) return null;
+        var s = text.replace(/,/g, '');
+        if (/무료|0원|비용\s*(거의\s*)?없음/.test(s)) return 0;
+        var manMatch = s.match(/(\d+(?:\.\d+)?)\s*만\s*원?/);
+        if (manMatch) return parseFloat(manMatch[1]);
+        var wonMatch = s.match(/(\d+(?:\.\d+)?)\s*원/);
+        if (wonMatch) return parseFloat(wonMatch[1]) / 10000;
+        return null;
+      }
+
+      function parseEstimatedMinutes(text) {
+        if (!text) return null;
+        var s = text;
+        if (/0분|이동\s*시간\s*없음|바로/.test(s)) return 5;
+        var total = 0;
+        var matched = false;
+        var hourMatch = s.match(/(\d+(?:\.\d+)?)\s*시간/);
+        if (hourMatch) { total += parseFloat(hourMatch[1]) * 60; matched = true; }
+        var minMatch = s.match(/(\d+(?:\.\d+)?)\s*분/);
+        if (minMatch) { total += parseFloat(minMatch[1]); matched = true; }
+        if (/반나절/.test(s)) { total += 240; matched = true; }
+        if (/1~2주|1주|일주일/.test(s)) { total += 600; matched = true; }
+        return matched ? total : null;
+      }
+
+      function splitFeaturePhrases(text) {
+        return (text || '')
+          .split(/[,/\n]|\.\s+/)
+          .map(function (s) { return s.trim(); })
+          .filter(function (s) { return s.length >= 2; });
+      }
+
+      function scoreOptionOnCriterion(opt, allOptions, criterion, dilemma, clarifText) {
+        var text = (opt.name + ' ' + opt.features + ' ' + opt.costOrTime).toLowerCase();
+        var ctx = (dilemma.situation + ' ' + dilemma.constraints + ' ' + clarifText).toLowerCase();
+        var cId = criterion.id;
+        var cName = criterion.name.trim();
+
+        // 1) Cost
+        if (cId === 'cost' || cName.indexOf('비용') !== -1 || cName.indexOf('가격') !== -1 || cName.indexOf('예산') !== -1) {
+          var costs = allOptions.map(function (o) { return parseEstimatedCostInManwon(o.costOrTime + ' ' + o.features); });
+          var myCost = parseEstimatedCostInManwon(opt.costOrTime + ' ' + opt.features);
+          if (myCost === null && !/저렴|무료|가성비|아낄|절약|비용|부담/.test(text)) {
+            return { score: null, insufficientInfo: true, rationale: '예상 비용 정보가 입력되지 않아 정보 부족으로 처리했습니다.' };
+          }
+          if (myCost !== null) {
+            var known = costs.filter(function (v) { return v !== null; });
+            var maxC = Math.max.apply(null, known.concat([1]));
+            var minC = Math.min.apply(null, known);
+            var ratio = maxC === minC ? 0.5 : (myCost - minC) / (maxC - minC);
+            var sc = Math.round((5 - ratio * 2.5) * 10) / 10;
+            if (myCost === 0 || /아낄|절약|이내/.test(text)) sc = Math.min(5, Math.max(sc, 4.5));
+            return {
+              score: Math.min(5, Math.max(1, Math.round(sc * 2) / 2)),
+              insufficientInfo: false,
+              rationale: '입력된 예상 비용(' + (myCost === 0 ? '최소 지출' : myCost + '만 원 수준') + ')을 기준으로 상대적 부담을 평가했습니다.'
+            };
+          }
+          var kwScore = /저렴|아낄|절약|가성비/.test(text) ? 4.5 : 3;
+          return { score: kwScore, insufficientInfo: false, rationale: '특징에 기재된 비용 절감 요소를 반영했습니다.' };
+        }
+
+        // 2) Time
+        if (cId === 'time' || cName.indexOf('시간') !== -1 || cName.indexOf('기간') !== -1) {
+          var mins = allOptions.map(function (o) { return parseEstimatedMinutes(o.costOrTime + ' ' + o.features); });
+          var myMin = parseEstimatedMinutes(opt.costOrTime + ' ' + opt.features);
+          if (myMin === null && !/빠르|즉시|바로|오래|단축|시간|적응/.test(text)) {
+            return { score: null, insufficientInfo: true, rationale: '소요 시간 정보가 입력되지 않아 정보 부족으로 처리했습니다.' };
+          }
+          if (myMin !== null) {
+            var knownM = mins.filter(function (v) { return v !== null; });
+            var maxM = Math.max.apply(null, knownM.concat([1]));
+            var minM = Math.min.apply(null, knownM);
+            var r = maxM === minM ? 0.5 : (myMin - minM) / (maxM - minM);
+            var scM = 4.8 - r * 2.3;
+            return {
+              score: Math.min(5, Math.max(1, Math.round(scM * 2) / 2)),
+              insufficientInfo: false,
+              rationale: '입력된 소요 시간 및 준비 부담을 비교하여 산출했습니다.'
+            };
+          }
+          var kwTime = /바로|즉시|단축|빠르/.test(text) ? 4.5 : /적응|왕복/.test(text) ? 3 : 3.5;
+          return { score: kwTime, insufficientInfo: false, rationale: '준비 및 적응 소요 문구를 참고해 평가했습니다.' };
+        }
+
+        // 3) Convenience
+        if (cId === 'convenience' || cName.indexOf('편리') !== -1 || cName.indexOf('호환') !== -1 || cName.indexOf('접근') !== -1) {
+          var convPts = 3.0;
+          if (/호환|익숙|가벼|경량|이동\s*시간\s*0|근처|유연|바로|무소음|휴대/.test(text)) convPts += 1.2;
+          if (/배터리\s*오래|트랙패드|포트\s*다양|불필요/.test(text)) convPts += 0.5;
+          if (/방문|적응\s*기간|왕복|강제성/.test(text)) convPts -= 0.7;
+          if (/hwp|엑셀|문서/.test(ctx) && /윈도우|호환/.test(text)) convPts += 0.5;
+          if (/백팩|이동/.test(ctx) && /가벼|경량|휴대|0분|근처/.test(text)) convPts += 0.4;
+          return {
+            score: Math.min(5, Math.max(1.5, Math.round(convPts * 2) / 2)),
+            insufficientInfo: false,
+            rationale: '사용 편의성, 이동·적응 부담 및 일상 환경과의 호환성을 반영했습니다.'
+          };
+        }
+
+        // 4) Satisfaction
+        if (cId === 'satisfaction' || cName.indexOf('만족') !== -1 || cName.indexOf('품질') !== -1 || cName.indexOf('성능') !== -1) {
+          var satPts = 3.2;
+          if (/완성도|개선|회복|도움|건강|오래감|무소음|해소|향상/.test(text)) satPts += 1.1;
+          if (/100%|초경량|디스플레이|투자/.test(text)) satPts += 0.5;
+          if (/기존.*1년|임시|유지/.test(text)) satPts -= 0.7;
+          return {
+            score: Math.min(5, Math.max(2, Math.round(satPts * 2) / 2)),
+            insufficientInfo: false,
+            rationale: '입력된 장점과 고민 해결 기여도를 바탕으로 체감 만족도를 추정했습니다.'
+          };
+        }
+
+        // 5) Fun
+        if (cId === 'fun' || cName.indexOf('재미') !== -1 || cName.indexOf('흥미') !== -1 || cName.indexOf('즐거') !== -1) {
+          var funPts = 2.8;
+          if (/교류|새로운|자유로운|독서|취미|매력|디스플레이|다양/.test(text)) funPts += 1.2;
+          if (/스트레스\s*해소|휴식/.test(text)) funPts += 0.6;
+          if (/기존|유지|반나절|단순/.test(text)) funPts -= 0.5;
+          return {
+            score: Math.min(5, Math.max(1.5, Math.round(funPts * 2) / 2)),
+            insufficientInfo: false,
+            rationale: '일상 속 신선함과 정서적 즐거움 요소를 기준으로 평가했습니다.'
+          };
+        }
+
+        // 6) Sustainability
+        if (cId === 'sustainability' || cName.indexOf('지속') !== -1 || cName.indexOf('장기') !== -1 || cName.indexOf('유지') !== -1) {
+          var susPts = 3.0;
+          if (/지속|꾸준|장기|환경|3년|회복|유연|루틴|강제성|건강/.test(text)) susPts += 1.3;
+          if (/무소음|배터리\s*오래/.test(text)) susPts += 0.7;
+          if (/1년\s*더|임시/.test(text)) susPts -= 0.8;
+          if (/피로|취침/.test(ctx) && /왕복|2시간\s*30분/.test(text)) susPts -= 0.6;
+          return {
+            score: Math.min(5, Math.max(1.5, Math.round(susPts * 2) / 2)),
+            insufficientInfo: false,
+            rationale: '시간이 지나도 무리 없이 꾸준히 이어갈 수 있는 지속성을 반영했습니다.'
+          };
+        }
+
+        // 7) Custom user-added criterion
+        var tokens = cName.split(/\s+/).filter(function (w) { return w.length >= 2; });
+        var hasMatch = tokens.some(function (t) { return text.indexOf(t.toLowerCase()) !== -1; });
+        if (!hasMatch && opt.features.trim().length < 18) {
+          return {
+            score: null,
+            insufficientInfo: true,
+            rationale: "'" + cName + "' 기준을 판단할 구체적 단서가 부족해 정보 부족으로 표시했습니다."
+          };
+        }
+        var customScore = hasMatch ? 4.5 : 3.2;
+        return {
+          score: customScore,
+          insufficientInfo: false,
+          rationale: hasMatch
+            ? "선택지 설명에 '" + cName + "' 관련 강점이 드러나 있어 긍정적으로 반영했습니다."
+            : "입력된 선택지 특징을 바탕으로 '" + cName + "' 관점의 일반적 적합도를 추정했습니다."
+        };
+      }
+
+      function analyzeDecision(dilemma, priorities, clarifications) {
+        var clarifText = (clarifications || [])
+          .filter(function (c) { return c.answer && c.answer.trim(); })
+          .map(function (c) { return c.question + ': ' + c.answer; })
+          .join(' / ');
+
+        var sortedPriorities = priorities.slice().sort(function (a, b) { return b.weight - a.weight; });
+        var topPriorities = sortedPriorities.filter(function (p) { return p.weight >= 4; }).slice(0, 3);
+        if (topPriorities.length === 0) topPriorities = sortedPriorities.slice(0, 2);
+        var topPriorityNames = topPriorities.map(function (p) { return p.name; }).join(', ');
+
+        var optionsAnalysis = dilemma.options.map(function (opt) {
+          var criterionScores = priorities.map(function (p) {
+            var evaluated = scoreOptionOnCriterion(opt, dilemma.options, p, dilemma, clarifText);
+            return {
+              criterionId: p.id,
+              criterionName: p.name,
+              score: evaluated.score,
+              insufficientInfo: evaluated.insufficientInfo,
+              rationale: evaluated.rationale
+            };
+          });
+
+          var stats = calculateWeightedScore(criterionScores, priorities);
+          var featurePhrases = splitFeaturePhrases(opt.features);
+          var pros = featurePhrases.slice(0, 3);
+          if (pros.length === 0) pros.push(opt.features.trim());
+
+          // Build honest, balanced cons from trade-offs & missing data
+          var cons = [];
+          var parsedCost = parseEstimatedCostInManwon(opt.costOrTime);
+          var parsedMin = parseEstimatedMinutes(opt.costOrTime);
+          if (parsedCost !== null && parsedCost >= 100) {
+            cons.push('초기 지출(' + opt.costOrTime.split('/')[0].trim() + ') 규모가 비교적 커서 예산 배분 확인이 필요합니다.');
+          } else if (parsedCost !== null && parsedCost > 10) {
+            cons.push('고정 또는 반복 지출 부담이 발생할 수 있어 가용 예산과 대조해 보아야 합니다.');
+          }
+          if (parsedMin !== null && parsedMin >= 90) {
+            cons.push('준비 또는 이동·적응에 일정 시간(' + opt.costOrTime.trim() + ')이 소요될 수 있습니다.');
+          }
+          if (!opt.costOrTime.trim()) {
+            cons.push('예상 비용 및 소요 시간 정보가 비어 있어 실제 부담을 사전에 확인해야 합니다.');
+          }
+          var lowestScored = criterionScores
+            .filter(function (c) { return !c.insufficientInfo && c.score !== null; })
+            .sort(function (a, b) { return a.score - b.score; })[0];
+          if (lowestScored && lowestScored.score <= 3.5 && cons.length < 2) {
+            cons.push("'" + lowestScored.criterionName + "' 기준에서는 다른 대안 대비 상대적인 아쉬움이 남을 수 있습니다.");
+          }
+          if (cons.length === 0) {
+            cons.push('선택 이후 실제 체감 조건이 초기 기대와 다를 수 있으므로 세부 조건을 한 번 더 점검하는 것이 좋습니다.');
+          }
+
+          var bestCriteria = criterionScores
+            .filter(function (c) { return !c.insufficientInfo && c.score !== null; })
+            .sort(function (a, b) { return b.score - a.score; })
+            .slice(0, 2)
+            .map(function (c) { return c.criterionName; });
+
+          var priorityFit = bestCriteria.length > 0
+            ? "설정하신 우선순위 중 특히 '" + bestCriteria.join("', '") + "' 측면에서 균형 잡힌 강점을 보이며, 중점 기준(" + topPriorityNames + ")과의 조화가 양호한 편입니다."
+            : '입력된 정보가 제한적이지만, 핵심 특징을 중심으로 기본적인 적합성을 정리했습니다.';
+
+          var expectedOutcome = "'" + opt.name + "' 선택 시 " + (pros[0] ? pros[0] + ' 등의 이점이 체감될 가능성이 있습니다.' : '기대했던 방향의 변화를 경험할 수 있습니다.') +
+            (opt.costOrTime.trim() ? ' (' + opt.costOrTime.trim() + ' 기준)' : '');
+
+          var confirmedFacts = [
+            "선택지 특징: " + opt.features.trim(),
+            opt.costOrTime.trim() ? "기재된 비용·시간: " + opt.costOrTime.trim() : '비용 및 소요 시간: 미입력(정보 부족)'
+          ];
+          if (dilemma.constraints.trim()) {
+            confirmedFacts.push('제약 조건: ' + dilemma.constraints.trim());
+          }
+
+          var aiAssumptions = [
+            "기재된 장점('" + (pros[0] || opt.name) + "')이 실제 실행 과정에서도 일관되게 유지된다고 가정했습니다.",
+            '외부 환경 변수(예기치 못한 일정 변화, 가격 변동 등)는 현재와 유사한 수준으로 유지된다는 전제에서 시나리오를 구성했습니다.'
+          ];
+
+          var futureSimulation = {
+            positiveOutcomes: [
+              "가장 중시하신 '" + topPriorityNames + "' 관점에서 고민의 핵심 원인이 점진적으로 완화될 가능성이 있습니다.",
+              pros[0] ? "'" + pros[0] + "' 효과가 일상에 자리 잡으며 심리적 만족감이 높아질 수 있습니다." : '선택 이후 실행 동력이 안정적으로 유지될 수 있습니다.'
+            ],
+            negativeOutcomes: [
+              cons[0] || '초기 기대와 달리 적응 과정에서 소소한 불편함이 나타날 가능성이 있습니다.',
+              '다른 선택지가 제공하던 대안적 기회(기회비용)에 대해 일시적인 아쉬움이 들 수 있습니다.'
+            ],
+            longTermConsiderations: [
+              '몇 달 뒤 생활 패턴이나 예산 상황이 달라졌을 때도 이 선택을 무리 없이 유지·관리할 수 있는지 점검해 보세요.',
+              dilemma.constraints.trim()
+                ? "명시하신 조건('" + dilemma.constraints.trim().slice(0, 45) + (dilemma.constraints.trim().length > 45 ? '...' : '') + "')과 장기적으로 충돌하지 않는지 확인이 필요합니다."
+                : '시간이 지난 뒤 변경하거나 되돌릴 수 있는 유연성이 충분한지 살펴보는 것이 좋습니다.'
+            ],
+            thingsToCheck: [
+              !opt.costOrTime.trim() ? '실제 소요 비용과 일정을 구체적인 숫자로 먼저 확인하기' : "기재된 비용·시간('" + opt.costOrTime.trim() + "') 외 추가 부대 조건이 없는지 확인하기",
+              '실제 경험자 후기나 환불·취소·변경 조건을 최종 결정 전 한 번 더 검토하기'
+            ],
+            confirmedFacts: confirmedFacts,
+            aiAssumptions: aiAssumptions
+          };
+
+          return {
+            optionId: opt.id,
+            optionName: opt.name.trim(),
+            pros: pros,
+            cons: cons.slice(0, 3),
+            priorityFit: priorityFit,
+            expectedOutcome: expectedOutcome,
+            criterionScores: criterionScores,
+            weightedScore: stats.weightedScore,
+            scoredCriteriaCount: stats.scoredCriteriaCount,
+            totalCriteriaCount: stats.totalCriteriaCount,
+            futureSimulation: futureSimulation
+          };
+        });
+
+        var sortedOptions = optionsAnalysis.slice().sort(function (a, b) {
+          var sa = a.weightedScore !== null ? a.weightedScore : -1;
+          var sb = b.weightedScore !== null ? b.weightedScore : -1;
+          if (sb !== sa) return sb - sa;
+          return b.scoredCriteriaCount - a.scoredCriteriaCount;
+        });
+
+        var bestOption = sortedOptions[0];
+        var nonRecommended = optionsAnalysis
+          .filter(function (o) { return o.optionId !== bestOption.optionId; })
+          .map(function (o) {
+            return {
+              optionId: o.optionId,
+              optionName: o.optionName,
+              strength: o.pros[0] + (o.pros[1] ? ' · ' + o.pros[1] : '') + ' 측면에서는 여전히 매력적인 대안입니다.'
+            };
+          });
+
+        var hasAnyInsufficient = optionsAnalysis.some(function (o) {
+          return o.criterionScores.some(function (cs) { return cs.insufficientInfo; });
+        });
+
+        var infoToVerify = [];
+        optionsAnalysis.forEach(function (o) {
+          var missingCols = o.criterionScores
+            .filter(function (cs) { return cs.insufficientInfo; })
+            .map(function (cs) { return cs.criterionName; });
+          if (missingCols.length > 0) {
+            infoToVerify.push("'" + o.optionName + "'의 " + missingCols.join(', ') + ' 관련 구체적 수치나 조건 확인');
+          }
+        });
+        if (dilemma.constraints.trim()) {
+          infoToVerify.push("제약 조건('" + dilemma.constraints.trim().slice(0, 40) + (dilemma.constraints.trim().length > 40 ? '...' : '') + "')과의 실제 부합 여부 재확인");
+        } else {
+          infoToVerify.push('예산 상한선 및 마감 기한 등 개인적 제약 조건이 더 없는지 점검');
+        }
+        infoToVerify.push('선택 후 변경·취소·보완이 가능한지 여부 확인');
+
+        var situationAnalysis =
+          "'" + dilemma.title.trim() + "' 고민은 현재 상황에서 '" + topPriorityNames + "' 기준을 특히 중요하게 고려하면서 " +
+          dilemma.options.length + '가지 대안의 균형을 맞추려는 의사결정입니다. ' +
+          (dilemma.constraints.trim() ? '제시하신 제약 조건을 함께 반영했으며, ' : '') +
+          (clarifText ? '추가로 답해주신 배경 정보까지 종합해 각 선택지의 적합도를 비교했습니다.' : '입력하신 특징과 비용·시간 정보를 바탕으로 객관적인 비교 포인트를 정리했습니다.');
+
+        var recommendationReason =
+          "사용자께서 높은 비중을 두신 '" + topPriorityNames + "' 기준을 가중 평균으로 반영했을 때, '" + bestOption.optionName +
+          "'이(가) 전반적인 균형 점수가 가장 높게 나타났습니다. 특히 " +
+          (bestOption.pros[0] ? "'" + bestOption.pros[0] + "' 점이 " : '') +
+          '현재 고민의 목적과 잘 맞물립니다. 다만 다른 선택지들도 각기 분명한 장점을 지니고 있으므로, 아래 비교표와 미래 시뮬레이션을 함께 보신 뒤 최종 결정을 내려보세요.';
+
+        var regretCheckQuestions = [
+          {
+            id: 'q1',
+            question: "이번 '" + dilemma.title.trim() + "' 결정에서 끝까지 양보하기 어려운 핵심 가치는 무엇인가요?",
+            placeholder: '예: 당장의 비용 절감보다 앞으로 2~3년간 편하게 쓰는 것'
+          },
+          {
+            id: 'q2',
+            question: "'" + bestOption.optionName + "' 또는 염두에 둔 선택을 골랐을 때 가장 아쉬울 것 같은 점은 무엇인가요?",
+            placeholder: '예: 다른 선택지가 주는 비용 절감이나 새로운 경험 기회를 놓치는 점'
+          },
+          {
+            id: 'q3',
+            question: '결정을 확정하기 전에 직접 확인하거나 주변에 물어봐야 할 사항이 남아 있나요?',
+            placeholder: '예: 실제 사용 조건, 환불 규정, 혹은 마감 일정 확인'
+          },
+          {
+            id: 'q4',
+            question: '선택하지 않은 대안들을 지금 내려놓더라도 마음이 편안할까요?',
+            placeholder: '예: 지금 상황에서 내릴 수 있는 최선이라면 납득할 수 있음'
+          }
+        ];
+
+        return {
+          analyzedAt: new Date().toISOString(),
+          situationAnalysis: situationAnalysis,
+          recommendedOptionId: bestOption.optionId,
+          recommendedOptionName: bestOption.optionName,
+          recommendationReason: recommendationReason,
+          nonRecommendedStrengths: nonRecommended,
+          infoToVerify: infoToVerify,
+          missingInfoNotice: hasAnyInsufficient
+            ? "일부 기준은 입력된 정보가 충분하지 않아 임의로 점수를 추측하지 않고 ‘정보 부족’으로 표기했습니다."
+            : null,
+          sensitiveDomainNotice: detectSensitiveDomain(dilemma.title, dilemma.situation, dilemma.constraints),
+          optionsAnalysis: optionsAnalysis,
+          regretCheckQuestions: regretCheckQuestions
+        };
+      }
+
+      function generateRegretFeedback(title, selectedOptionName, answers) {
+        var filled = answers.filter(function (a) { return a.answer && a.answer.trim(); });
+        var combined = filled.map(function (a) { return a.answer; }).join(' ');
+
+        var checklist = [
+          "선택하신 '" + selectedOptionName + "'이(가) 말씀하신 핵심 기준과 어긋나지 않는지 한 번 더 대조해 보세요."
+        ];
+        var tips = [];
+
+        if (/비용|돈|가격|예산|비싸/.test(combined)) {
+          checklist.push('예상 범위 외에 숨은 추가 지출이나 유지 비용이 없는지 최종 견적을 확인하세요.');
+          tips.push('예산 상한선을 명확히 정해두고, 그 범위 안에서만 진행하면 지출에 대한 후회를 크게 줄일 수 있습니다.');
+        }
+        if (/시간|바쁘|일정|피곤|체력/.test(combined)) {
+          checklist.push('실제 주간 일정표에 이 선택을 넣었을 때 수면이나 휴식 시간이 지나치게 줄지 않는지 확인하세요.');
+          tips.push('처음 2주간은 무리하지 않는 시범 기간으로 두고, 부담이 크면 빈도를 조절할 여지를 남겨두세요.');
+        }
+        if (/아쉽|포기|미련|고민|걱정|불안/.test(combined)) {
+          checklist.push('포기하는 선택지의 장점 중 일부를 보완할 작은 대안(예: 추후 재시도 일정 잡기)이 있는지 적어보세요.');
+          tips.push('이번 결정이 평생 되돌릴 수 없는 선택이 아니라는 점을 기억하면 불필요한 미련을 덜 수 있습니다.');
+        }
+        if (/확인|물어|규정|후기|비교/.test(combined)) {
+          checklist.push('답변에 적으신 확인 사항(규정, 후기, 실물 확인 등)을 오늘 안에 체크리스트로 완료한 뒤 확정하세요.');
+        }
+
+        if (checklist.length < 3) {
+          checklist.push('결정을 실행에 옮기기 전, 가장 중요한 1가지 조건만 충족된다면 바로 시작할 수 있는 상태인지 점검하세요.');
+        }
+        if (tips.length < 2) {
+          tips.push('선택한 뒤에는 고르지 않은 대안과 계속 비교하기보다, 선택한 길에서 기대한 장점을 최대화하는 데 집중해 보세요.');
+          tips.push('일정 기간이 지난 뒤 이 앱의 ‘결정 기록’에 실제 만족도와 소감을 남기면 다음 선택이 훨씬 수월해집니다.');
+        }
+
+        return {
+          adviceSummary: "'" + title + "' 고민에 대해 직접 정리해주신 " + filled.length + '개의 답변을 살펴보면, 현재 가장 신경 쓰시는 부분과 망설임의 이유가 비교적 뚜렷하게 드러납니다. 아래 점검 항목만 확인하시면 한결 가벼운 마음으로 선택을 확정하실 수 있습니다.',
+          finalChecklist: checklist.slice(0, 4),
+          regretMitigationTips: tips.slice(0, 3),
+          readinessNote: "'" + selectedOptionName + "'을(를) 포함해 최종 선택의 권한은 온전히 당신에게 있습니다. 충분히 고민하신 만큼 어떤 결정을 내리시더라도 스스로의 기준을 믿고 한 걸음 나아가 보세요."
+        };
+      }
+
+      /* =========================================================
+       * 5. Application State
+       * ========================================================= */
+      var state = {
+        view: 'home', // home | input | priorities | clarify | analyzing | results | history
+        dilemma: createEmptyDilemma(),
+        priorities: clone(DEFAULT_PRIORITIES),
+        inputErrors: null,
+        inputSummaryErrors: [],
+        priorityAddError: null,
+        newCriterionName: '',
+        newCriterionWeight: 3,
+        clarifyingQuestions: [],
+        analysisResult: null,
+        simActiveOptionId: '',
+        regretAnswers: {},
+        regretError: null,
+        regretFeedback: null,
+        selectedFinalOptionId: '',
+        confirmedOptionName: null,
+        currentRecordId: null,
+        records: loadRecords(),
+        historySearch: '',
+        editingRecordId: null,
+        editFinalDecision: '',
+        editSatisfaction: null,
+        editReview: '',
+        confirmDeleteId: null
+      };
+
+      // Support ?autostart=1
+      try {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('autostart') === '1') {
+          state.view = 'input';
+        }
+      } catch (e) {}
+
+      function scrollTop() {
+        try {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (e) {
+          window.scrollTo(0, 0);
+        }
+      }
+
+      function navigate(nextView) {
+        state.view = nextView;
+        render();
+        scrollTop();
+      }
+
+      function startNew() {
+        state.dilemma = createEmptyDilemma();
+        state.priorities = clone(DEFAULT_PRIORITIES);
+        state.inputErrors = null;
+        state.inputSummaryErrors = [];
+        state.clarifyingQuestions = [];
+        state.analysisResult = null;
+        state.regretAnswers = {};
+        state.regretFeedback = null;
+        state.regretError = null;
+        state.confirmedOptionName = null;
+        state.currentRecordId = null;
+        navigate('input');
+      }
+
+      function loadPreset(presetId) {
+        var preset = DILEMMA_PRESETS.find(function (p) { return p.id === presetId; });
+        if (!preset) return;
+        state.dilemma = clone(preset.dilemma);
+        state.priorities = clone(preset.priorities);
+        state.inputErrors = null;
+        state.inputSummaryErrors = [];
+        state.analysisResult = null;
+        state.regretAnswers = {};
+        state.regretFeedback = null;
+        state.confirmedOptionName = null;
+        state.currentRecordId = null;
+        navigate('input');
+      }
+
+      function runFullAnalysis(clarifications) {
+        state.view = 'analyzing';
+        render();
+        scrollTop();
+
+        window.setTimeout(function () {
+          var res = analyzeDecision(state.dilemma, state.priorities, clarifications || []);
+          state.analysisResult = res;
+          state.simActiveOptionId = res.recommendedOptionId;
+          state.selectedFinalOptionId = res.recommendedOptionId;
+          state.regretAnswers = {};
+          state.regretFeedback = null;
+          state.regretError = null;
+          state.confirmedOptionName = null;
+          state.currentRecordId = null;
+          state.view = 'results';
+          render();
+          scrollTop();
+        }, 450);
+      }
+
+      function startAnalysisFlow() {
+        var check = validateDilemmaInput(state.dilemma);
+        if (!check.isValid) {
+          state.inputErrors = check.errors;
+          state.inputSummaryErrors = check.summaryMessages;
+          navigate('input');
+          return;
+        }
+        var questions = buildClarifyingQuestions(state.dilemma, state.priorities);
+        if (questions.length > 0) {
+          state.clarifyingQuestions = questions.map(function (q) {
+            return { question: q, answer: '' };
+          });
+          navigate('clarify');
+          return;
+        }
+        runFullAnalysis([]);
+      }
+
+      function upsertCurrentRecord(finalDecisionName) {
+        if (!state.analysisResult) return;
+        var now = new Date().toISOString();
+        var recordId = state.currentRecordId || ('rec-' + Date.now());
+        var existing = state.records.find(function (r) { return r.id === recordId; });
+        var record = {
+          id: recordId,
+          title: state.dilemma.title.trim(),
+          createdAt: existing ? existing.createdAt : now,
+          updatedAt: now,
+          options: state.dilemma.options.map(function (o) { return o.name.trim(); }),
+          recommendedOption: state.analysisResult.recommendedOptionName,
+          recommendationReason: state.analysisResult.recommendationReason,
+          finalDecision: finalDecisionName,
+          satisfaction: existing ? existing.satisfaction : null,
+          review: existing ? existing.review : ''
+        };
+        state.records = [record].concat(state.records.filter(function (r) { return r.id !== recordId; }));
+        persistRecords(state.records);
+        state.currentRecordId = recordId;
+      }
+
+      /* =========================================================
+       * 6. Rendering Views
+       * ========================================================= */
+      function renderHeader() {
+        var navItems = [
+          { id: 'home', label: '홈' },
+          { id: 'input', label: '고민 입력' },
+          { id: 'priorities', label: '우선순위' }
+        ];
+        if (state.analysisResult) {
+          navItems.push({ id: 'results', label: '분석 결과' });
+        }
+        navItems.push({ id: 'history', label: '결정 기록' });
+
+        var activeNavId = state.view === 'clarify' ? 'priorities' : (state.view === 'analyzing' ? 'results' : state.view);
+
+        var desktopLinks = navItems.map(function (item) {
+          var cls = 'nav-link' + (activeNavId === item.id ? ' active' : '');
+          return '<button type="button" class="' + cls + '" data-nav="' + item.id + '">' + escapeHtml(item.label) + '</button>';
+        }).join('');
+
+        var mobileLinks = navItems.map(function (item) {
+          var cls = 'mobile-nav-link' + (activeNavId === item.id ? ' active' : '');
+          return '<button type="button" class="' + cls + '" data-nav="' + item.id + '">' + escapeHtml(item.label) + '</button>';
+        }).join('');
+
+        document.getElementById('site-header').innerHTML =
+          '<div class="header-inner">' +
+            '<button type="button" class="brand-btn" data-nav="home">' +
+              compassSvg() +
+              '<span>결정나침반</span>' +
+            '</button>' +
+            '<nav class="desktop-nav" aria-label="주요 메뉴">' + desktopLinks + '</nav>' +
+            '<button type="button" class="btn btn-header" data-action="start-new">새로운 고민 시작</button>' +
+          '</div>' +
+          '<nav class="mobile-nav" aria-label="모바일 메뉴">' + mobileLinks + '</nav>';
+      }
+
+      function renderHomeView() {
+        var presetLinks = DILEMMA_PRESETS.map(function (p) {
+          return '<button type="button" class="text-link" data-preset="' + escapeHtml(p.id) + '">' + escapeHtml(p.label) + '</button>';
+        }).join('');
+
+        var countText = state.records.length > 0
+          ? ' <span class="mono" style="font-size:12px;color:#5A6578;">(' + state.records.length + ')</span>'
+          : '';
+
+        return '<div class="container page-section stack-lg">' +
+          '<section class="hero-grid">' +
+            '<div style="display:flex;flex-direction:column;justify-content:center;gap:24px;">' +
+              '<div class="stack-xs">' +
+                '<p class="kicker">결정나침반 · DECISION COMPASS</p>' +
+                '<h1 class="h1-hero">당신의 선택에 방향을 더하다</h1>' +
+                '<p class="lead" style="margin-top:8px;">일상의 크고 작은 갈림길 앞에서 혼자 고민하지 마세요. 결정나침반은 당신의 상황과 중요하게 여기는 우선순위를 함께 분석해, 선택지별 장단점과 예상 결과까지 균형 있게 정리해 드립니다.</p>' +
+              '</div>' +
+              '<div class="flex-row">' +
+                '<button type="button" class="btn btn-primary" data-action="start-new">' +
+                  '<span>새로운 고민 시작하기</span>' + ICONS.arrowRight +
+                '</button>' +
+                '<button type="button" class="btn btn-secondary" data-nav="history">' +
+                  ICONS.history + '<span>이전 결정 기록 보기</span>' + countText +
+                '</button>' +
+              '</div>' +
+              '<div class="divider-top flex-row" style="font-size:14px;color:#4B5568;gap:8px 14px;">' +
+                '<span style="white-space:nowrap;">예시 고민으로 바로 체험:</span>' +
+                '<span class="flex-row" style="gap:14px;">' + presetLinks + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="hero-visual">' + heroIllustrationSvg() + '</div>' +
+          '</section>' +
+
+          '<section aria-labelledby="features-heading" class="stack-sm">' +
+            '<div class="stack-xs">' +
+              '<h2 id="features-heading" class="h2-section">스스로 확신 있는 결정을 내리는 3단계 흐름</h2>' +
+              '<p class="muted">단순히 하나의 답을 강요하지 않고, 근거 있는 비교와 성찰 과정을 제공합니다.</p>' +
+            '</div>' +
+            '<div class="grid-3">' +
+              '<article class="card" style="display:flex;flex-direction:column;justify-content:space-between;gap:20px;">' +
+                '<div class="stack-xs">' +
+                  '<div class="feature-icon-box">' + ICONS.scale + '</div>' +
+                  '<h3 class="h3-card" style="margin-top:12px;">01. 우선순위 맞춤 가중 분석</h3>' +
+                  '<p class="muted" style="color:var(--text-secondary);line-height:1.65;">비용, 시간, 편리함, 만족도 등 나만의 기준에 1~5점 중요도를 부여하면, 선택지별 점수를 매기고 가중 평균으로 객관적인 비교표를 완성합니다.</p>' +
+                '</div>' +
+                '<p class="divider-top" style="font-size:12px;color:var(--text-muted);margin:0;">기준 직접 추가 · 부족한 정보는 추정 금지 표기</p>' +
+              '</article>' +
+              '<article class="card-lavender" style="display:flex;flex-direction:column;justify-content:space-between;gap:20px;">' +
+                '<div class="stack-xs">' +
+                  '<div class="feature-icon-box">' + ICONS.sparkles + '</div>' +
+                  '<h3 class="h3-card" style="margin-top:12px;">02. 미래의 나 시뮬레이션</h3>' +
+                  '<p class="muted" style="color:var(--text-secondary);line-height:1.65;">각 선택지 이후 펼쳐질 수 있는 긍정적·부정적 결과와 장기적 고려사항을 미리 살펴봅니다. 입력된 사실과 추론을 명확히 구분해 보여드립니다.</p>' +
+                '</div>' +
+                '<p class="divider-top" style="font-size:12px;color:var(--text-muted);margin:0;">선택 전 확인 체크 · 단정적 예측 배제</p>' +
+              '</article>' +
+              '<article class="card" style="display:flex;flex-direction:column;justify-content:space-between;gap:20px;">' +
+                '<div class="stack-xs">' +
+                  '<div class="feature-icon-box">' + ICONS.shield + '</div>' +
+                  '<h3 class="h3-card" style="margin-top:12px;">03. 후회 방지 체크 & 결정 복기</h3>' +
+                  '<p class="muted" style="color:var(--text-secondary);line-height:1.65;">확정 직전 핵심 질문에 답하며 놓친 아쉬움을 점검하고, 결정 이후에는 실제 만족도와 후기를 기록해 나만의 의사결정 아카이브를 쌓아갑니다.</p>' +
+                '</div>' +
+                '<p class="divider-top" style="font-size:12px;color:var(--text-muted);margin:0;">로그인 없는 브라우저 저장 · 언제든 수정 및 복기</p>' +
+              '</article>' +
+            '</div>' +
+          '</section>' +
+
+          '<section aria-label="서비스 이용 안내" class="card-ivory" style="font-size:14px;color:var(--text-secondary);">' +
+            '<p style="font-weight:700;color:var(--navy-900);margin:0 0 6px;">결정나침반 이용 시 참고 사항</p>' +
+            '<p style="margin:0;line-height:1.65;">본 서비스는 일상생활의 의사결정을 돕기 위한 참고용 보조 도구입니다. 제시되는 점수와 추천은 입력하신 내용을 바탕으로 한 참고용 추정치이며 절대적인 정답이 아닙니다. 최종 결정은 항상 사용자의 판단에 달려 있으며, 의료·법률·금융 등 전문적인 판단이 필요한 사안은 반드시 해당 분야 전문가와 상의하시기 바랍니다.</p>' +
+          '</section>' +
+        '</div>';
+      }
+
+      function renderInputView() {
+        var errs = state.inputErrors;
+        var presetBtns = DILEMMA_PRESETS.map(function (p) {
+          return '<button type="button" class="btn btn-secondary btn-sm" data-preset="' + escapeHtml(p.id) + '">예시: ' + escapeHtml(p.label) + '</button>';
+        }).join('');
+
+        var errorSummaryHtml = '';
+        if (state.inputSummaryErrors.length > 0) {
+          errorSummaryHtml = '<div role="alert" class="alert-box alert-danger">' +
+            '<div class="flex-row" style="gap:8px;font-weight:700;">' + ICONS.alert + '<span>필수 입력 항목을 확인해 주세요</span></div>' +
+            '<ul style="margin:8px 0 0;padding-left:20px;font-size:13px;">' +
+              state.inputSummaryErrors.map(function (m) { return '<li>' + escapeHtml(m) + '</li>'; }).join('') +
+            '</ul>' +
+          '</div>';
+        }
+
+        var optionsHtml = state.dilemma.options.map(function (opt, idx) {
+          var optErr = errs && errs.options && errs.options[opt.id] ? errs.options[opt.id] : {};
+          var canDelete = state.dilemma.options.length > 2;
+          return '<div class="card stack-sm" data-option-card="' + escapeHtml(opt.id) + '">' +
+            '<div class="flex-between divider-bottom">' +
+              '<h3 class="h3-card" style="font-size:16px;">선택지 ' + (idx + 1) + '</h3>' +
+              '<button type="button" class="btn btn-danger-ghost" data-remove-option="' + escapeHtml(opt.id) + '" ' + (canDelete ? '' : 'disabled') + ' aria-label="선택지 ' + (idx + 1) + ' 삭제">' +
+                ICONS.trash + '<span>삭제</span>' +
+              '</button>' +
+            '</div>' +
+            '<div class="grid-2">' +
+              '<div>' +
+                '<label class="field-label" for="opt-name-' + escapeHtml(opt.id) + '">선택지 이름 <span class="required-mark">*</span></label>' +
+                '<input id="opt-name-' + escapeHtml(opt.id) + '" type="text" class="input' + (optErr.name ? ' error' : '') + '" data-opt-field="name" data-opt-id="' + escapeHtml(opt.id) + '" value="' + escapeHtml(opt.name) + '" placeholder="예: 선택지 ' + (idx + 1) + '의 핵심 이름" />' +
+                (optErr.name ? '<p class="error-text">' + escapeHtml(optErr.name) + '</p>' : '') +
+              '</div>' +
+              '<div>' +
+                '<label class="field-label" for="opt-cost-' + escapeHtml(opt.id) + '">예상 비용이나 소요 시간 (선택)</label>' +
+                '<input id="opt-cost-' + escapeHtml(opt.id) + '" type="text" class="input" data-opt-field="costOrTime" data-opt-id="' + escapeHtml(opt.id) + '" value="' + escapeHtml(opt.costOrTime) + '" placeholder="예: 약 15만 원 / 주 2회 2시간 소요" />' +
+              '</div>' +
+            '</div>' +
+            '<div>' +
+              '<label class="field-label" for="opt-features-' + escapeHtml(opt.id) + '">4. 선택지의 특징과 장점 <span class="required-mark">*</span></label>' +
+              '<textarea id="opt-features-' + escapeHtml(opt.id) + '" rows="2" class="textarea' + (optErr.features ? ' error' : '') + '" data-opt-field="features" data-opt-id="' + escapeHtml(opt.id) + '" placeholder="이 선택지를 골랐을 때 기대되는 특징, 장점, 매력 포인트를 적어주세요.">' + escapeHtml(opt.features) + '</textarea>' +
+              (optErr.features ? '<p class="error-text">' + escapeHtml(optErr.features) + '</p>' : '') +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+        return '<div class="container-narrow page-section stack-md">' +
+          '<div class="stack-sm">' +
+            '<div class="flex-row" style="font-size:13px;color:var(--text-muted);gap:8px;">' +
+              '<strong style="color:var(--navy-900);">1. 고민 및 선택지 입력</strong>' +
+              '<span aria-hidden="true">→</span><span>2. 개인 우선순위 설정</span>' +
+              '<span aria-hidden="true">→</span><span>3. 분석 결과</span>' +
+            '</div>' +
+            '<div class="flex-between">' +
+              '<div>' +
+                '<h1 class="h1-page">어떤 고민을 두고 망설이고 계신가요?</h1>' +
+                '<p class="muted" style="margin-top:4px;">상황과 비교할 선택지를 구체적으로 적을수록 현실적인 분석을 받을 수 있습니다.</p>' +
+              '</div>' +
+              '<button type="button" class="btn btn-secondary btn-sm" data-action="reset-input">' + ICONS.reset + '<span>입력 초기화</span></button>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="card-lavender flex-between" style="padding:18px 20px;">' +
+            '<div class="flex-row" style="font-size:14px;color:var(--navy-900);gap:8px;">' +
+              ICONS.sparkles + '<span>입력이 막막하다면 예시 데이터를 불러와 바로 테스트해 보세요.</span>' +
+            '</div>' +
+            '<div class="flex-row" style="gap:8px;">' + presetBtns + '</div>' +
+          '</div>' +
+
+          errorSummaryHtml +
+
+          '<form id="dilemma-form" class="stack-md" novalidate>' +
+            '<div class="card stack-sm">' +
+              '<div>' +
+                '<label class="field-label" for="dilemma-title">1. 고민의 제목 <span class="required-mark">*</span></label>' +
+                '<input id="dilemma-title" type="text" class="input' + (errs && errs.title ? ' error' : '') + '" data-dilemma-field="title" value="' + escapeHtml(state.dilemma.title) + '" placeholder="예: 재택 및 카페 작업용 노트북 교체 고민" />' +
+                (errs && errs.title ? '<p class="error-text">' + escapeHtml(errs.title) + '</p>' : '') +
+              '</div>' +
+              '<div>' +
+                '<label class="field-label" for="dilemma-situation">2. 고민이 발생한 상황과 이유 <span class="required-mark">*</span></label>' +
+                '<textarea id="dilemma-situation" rows="4" class="textarea' + (errs && errs.situation ? ' error' : '') + '" data-dilemma-field="situation" placeholder="현재 처한 상황, 고민하게 된 계기, 꼭 해결하고 싶은 문제를 자유롭게 적어주세요.">' + escapeHtml(state.dilemma.situation) + '</textarea>' +
+                (errs && errs.situation ? '<p class="error-text">' + escapeHtml(errs.situation) + '</p>' : '') +
+              '</div>' +
+            '</div>' +
+
+            '<div class="stack-sm">' +
+              '<div class="flex-between">' +
+                '<div>' +
+                  '<h2 class="h2-section" style="font-size:18px;">3. 비교할 선택지 (<span class="tabular-nums">' + state.dilemma.options.length + ' / 5</span>개)</h2>' +
+                  '<p class="muted" style="font-size:13px;margin-top:2px;">최소 2개, 최대 5개의 선택지를 등록하고 각각의 특징과 비용·시간을 적어주세요.</p>' +
+                '</div>' +
+                '<button type="button" class="btn btn-lavender" data-action="add-option" ' + (state.dilemma.options.length >= 5 ? 'disabled' : '') + '>' +
+                  ICONS.plus + '<span>선택지 추가</span>' +
+                '</button>' +
+              '</div>' +
+              (errs && errs.optionsGeneral ? '<p class="error-text">' + escapeHtml(errs.optionsGeneral) + '</p>' : '') +
+              '<div class="stack-sm">' + optionsHtml + '</div>' +
+            '</div>' +
+
+            '<div class="card">' +
+              '<label class="field-label" for="dilemma-constraints">6. 추가적인 조건이나 제약사항 (선택)</label>' +
+              '<p class="muted" style="font-size:13px;margin-bottom:8px;">예산 상한선, 마감 기한, 피하고 싶은 조건 등 꼭 반영해야 할 조건이 있다면 적어주세요.</p>' +
+              '<textarea id="dilemma-constraints" rows="3" class="textarea" data-dilemma-field="constraints" placeholder="예: 월 지출 20만 원 이하로 제한하고 싶고, 평일 밤 10시 이후에는 시간이 어렵습니다.">' + escapeHtml(state.dilemma.constraints) + '</textarea>' +
+            '</div>' +
+
+            '<div style="display:flex;justify-content:flex-end;">' +
+              '<button type="submit" class="btn btn-primary">' +
+                '<span>다음: 우선순위 설정하기</span>' + ICONS.arrowRight +
+              '</button>' +
+            '</div>' +
+          '</form>' +
+        '</div>';
+      }
+
+      function renderPrioritiesView() {
+        var WEIGHT_LABELS = { 1: '거의 중요하지 않음', 2: '조금 중요함', 3: '보통', 4: '중요함', 5: '매우 중요함' };
+        var shares = calculateWeightShares(state.priorities);
+        var canDelete = state.priorities.length > 1;
+
+        var rowsHtml = shares.map(function (c) {
+          return '<div class="priority-row">' +
+            '<div style="min-width:210px;">' +
+              '<label for="slider-' + escapeHtml(c.id) + '" style="font-weight:700;color:var(--navy-900);display:block;">' + escapeHtml(c.name) + '</label>' +
+              '<p class="muted tabular-nums" style="font-size:12px;margin-top:2px;" data-share-for="' + escapeHtml(c.id) + '">반영 비중 ' + c.sharePercent + '% · ' + WEIGHT_LABELS[c.weight] + '</p>' +
+            '</div>' +
+            '<div class="flex-row" style="flex:1;flex-wrap:nowrap;gap:14px;">' +
+              '<input id="slider-' + escapeHtml(c.id) + '" type="range" min="1" max="5" step="1" value="' + c.weight + '" class="compass-slider" data-priority-slider="' + escapeHtml(c.id) + '" aria-label="' + escapeHtml(c.name) + ' 중요도" />' +
+              '<span class="mono" style="width:52px;text-align:right;font-size:14px;font-weight:600;" data-weight-label="' + escapeHtml(c.id) + '">' + c.weight + ' / 5</span>' +
+              '<button type="button" class="btn btn-danger-ghost" style="min-width:36px;padding:6px;" data-delete-priority="' + escapeHtml(c.id) + '" ' + (canDelete ? '' : 'disabled') + ' aria-label="' + escapeHtml(c.name) + ' 기준 삭제">' + ICONS.trash + '</button>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+        return '<div class="container-narrow page-section stack-md">' +
+          '<div class="stack-sm">' +
+            '<div class="flex-row" style="font-size:13px;color:var(--text-muted);gap:8px;">' +
+              '<button type="button" class="text-link" style="font-size:13px;" data-nav="input">1. 고민 및 선택지 입력</button>' +
+              '<span aria-hidden="true">→</span><strong style="color:var(--navy-900);">2. 개인 우선순위 설정</strong>' +
+              '<span aria-hidden="true">→</span><span>3. 분석 결과</span>' +
+            '</div>' +
+            '<div class="flex-between">' +
+              '<div>' +
+                '<h1 class="h1-page">나에게 가장 중요한 기준을 정해 주세요</h1>' +
+                '<p class="muted" style="margin-top:4px;">중요도가 높은 기준일수록 최종 비교 점수의 가중 평균에 더 큰 비중으로 반영됩니다.</p>' +
+              '</div>' +
+              '<button type="button" class="btn btn-secondary btn-sm" data-action="reset-priorities">' + ICONS.reset + '<span>기본 기준으로 복원</span></button>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="card stack-sm">' +
+            '<div class="flex-between divider-bottom">' +
+              '<h2 class="h3-card">선택 기준 중요도 (<span class="tabular-nums">' + state.priorities.length + '</span>개)</h2>' +
+              '<span class="muted tabular-nums" style="font-size:12px;">1점(낮음) ~ 5점(매우 중요)</span>' +
+            '</div>' +
+            '<div>' + rowsHtml + '</div>' +
+          '</div>' +
+
+          '<form id="add-priority-form" class="card-lavender stack-sm">' +
+            '<div>' +
+              '<h2 class="h3-card" style="font-size:16px;">나만의 기준 직접 추가하기</h2>' +
+              '<p class="muted" style="font-size:13px;margin-top:2px;">예: 건강, 가족과의 시간, 성장 가능성, 이동 거리, 디자인 등</p>' +
+            '</div>' +
+            '<div class="flex-row" style="align-items:stretch;">' +
+              '<input id="new-priority-input" type="text" class="input" style="flex:1;min-width:200px;background:#FFFFFF;" value="' + escapeHtml(state.newCriterionName) + '" aria-label="새 우선순위 기준 이름" placeholder="새로운 기준 이름 입력" />' +
+              '<div class="flex-row" style="background:#FFFFFF;border:1px solid var(--border-input);border-radius:12px;padding:0 12px;gap:8px;flex-wrap:nowrap;">' +
+                '<label for="new-priority-weight" style="font-size:12px;color:#4B5568;white-space:nowrap;">중요도</label>' +
+                '<select id="new-priority-weight" class="select" style="border:none;background:transparent;padding:8px 4px;width:auto;font-weight:600;">' +
+                  [1, 2, 3, 4, 5].map(function (n) {
+                    return '<option value="' + n + '"' + (state.newCriterionWeight === n ? ' selected' : '') + '>' + n + '점</option>';
+                  }).join('') +
+                '</select>' +
+              '</div>' +
+              '<button type="submit" class="btn btn-lavender">' + ICONS.plus + '<span>기준 추가</span></button>' +
+            '</div>' +
+            (state.priorityAddError ? '<p class="error-text">' + escapeHtml(state.priorityAddError) + '</p>' : '') +
+          '</form>' +
+
+          '<div class="flex-between">' +
+            '<button type="button" class="btn btn-secondary" data-nav="input">' + ICONS.arrowLeft + '<span>이전 단계로</span></button>' +
+            '<button type="button" class="btn btn-primary" data-action="start-analysis">' + ICONS.sparkles + '<span>분석 시작하기</span></button>' +
+          '</div>' +
+        '</div>';
+      }
+
+      function renderClarifyView() {
+        var qCards = state.clarifyingQuestions.map(function (item, idx) {
+          return '<div class="card stack-xs">' +
+            '<label class="field-label" for="clarify-q-' + idx + '" style="font-size:16px;">질문 ' + (idx + 1) + '. ' + escapeHtml(item.question) + '</label>' +
+            '<textarea id="clarify-q-' + idx + '" rows="2" class="textarea" data-clarify-idx="' + idx + '" placeholder="알고 계신 범위 내에서 간단히 적어주시거나, 아직 모른다면 비워두셔도 됩니다.">' + escapeHtml(item.answer) + '</textarea>' +
+          '</div>';
+        }).join('');
+
+        return '<div class="container-narrow page-section stack-md" style="max-width:780px;">' +
+          '<div class="stack-xs">' +
+            '<div class="flex-row" style="gap:6px;font-size:14px;font-weight:600;color:var(--navy-700);">' +
+              ICONS.help + '<span>더 정확한 비교를 위한 추가 확인</span>' +
+            '</div>' +
+            '<h1 class="h1-page">분석 전 몇 가지 정보만 더 알려주세요</h1>' +
+            '<p class="muted" style="line-height:1.65;">입력하신 내용만으로도 분석할 수 있지만, 아래 사항을 함께 알려주시면 추측을 줄이고 당신의 현실에 더 꼭 맞는 결과를 정리해 드릴 수 있습니다.</p>' +
+          '</div>' +
+          '<div class="stack-sm">' + qCards + '</div>' +
+          '<div class="flex-between">' +
+            '<button type="button" class="btn btn-secondary" data-nav="priorities">' + ICONS.arrowLeft + '<span>우선순위로 돌아가기</span></button>' +
+            '<div class="flex-row">' +
+              '<button type="button" class="btn btn-lavender" data-action="skip-clarify">건너뛰고 바로 분석하기</button>' +
+              '<button type="button" class="btn btn-primary" data-action="submit-clarify"><span>답변 반영해 분석하기</span>' + ICONS.arrowRight + '</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }
+
+      function renderAnalyzingView() {
+        return '<div class="container-narrow page-section" style="padding-top:80px;padding-bottom:80px;text-align:center;" role="status" aria-live="polite">' +
+          '<div style="width:76px;height:76px;border-radius:18px;background:var(--lavender-100);border:1px solid var(--lavender-200);display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px;">' +
+            compassSvg('animate-compass') +
+          '</div>' +
+          '<h2 class="h2-section">우선순위 가중치를 반영해 선택지를 분석하고 있습니다...</h2>' +
+          '<p class="muted" style="margin-top:8px;">선택지별 장단점, 비교 점수, 미래 시뮬레이션과 후회 방지 질문을 정리하는 중입니다.</p>' +
+        '</div>';
+      }
+
+      function renderResultsView() {
+        var r = state.analysisResult;
+        var d = state.dilemma;
+        var shares = calculateWeightShares(state.priorities);
+        var recOpt = r.optionsAnalysis.find(function (o) { return o.optionId === r.recommendedOptionId; }) || r.optionsAnalysis[0];
+        var simOpt = r.optionsAnalysis.find(function (o) { return o.optionId === state.simActiveOptionId; }) || r.optionsAnalysis[0];
+        var candidateOpt = r.optionsAnalysis.find(function (o) { return o.optionId === state.selectedFinalOptionId; }) || recOpt;
+
+        var noticesHtml =
+          '<div class="alert-box alert-info">' +
+            ICONS.info +
+            '<p style="margin:0;">표시된 점수와 분석은 입력하신 정보를 바탕으로 산출한 <strong style="color:var(--navy-900);">참고용 추정치</strong>입니다. 최종 선택의 주도권은 항상 사용자에게 있으며, 추천되지 않은 선택지 역시 상황에 따라 충분히 좋은 대안이 될 수 있습니다.</p>' +
+          '</div>';
+
+        if (r.missingInfoNotice) {
+          noticesHtml += '<div class="alert-box alert-lavender">' + ICONS.alert + '<p style="margin:0;">' + escapeHtml(r.missingInfoNotice) + '</p></div>';
+        }
+        if (r.sensitiveDomainNotice) {
+          noticesHtml += '<div role="note" class="alert-box alert-warn">' + ICONS.alert + '<p style="margin:0;">' + escapeHtml(r.sensitiveDomainNotice) + '</p></div>';
+        }
+
+        // Section 2 right column
+        var otherStrengthsHtml = '';
+        if (r.nonRecommendedStrengths.length > 0) {
+          otherStrengthsHtml = '<div class="card-lavender stack-xs">' +
+            '<h3 class="h3-card" style="font-size:16px;">다른 선택지가 가진 고유한 장점</h3>' +
+            '<ul style="margin:8px 0 0;padding-left:0;list-style:none;" class="stack-xs">' +
+              r.nonRecommendedStrengths.map(function (item) {
+                return '<li><strong style="color:var(--navy-900);display:block;font-size:14px;">' + escapeHtml(item.optionName) + '</strong>' +
+                  '<span style="font-size:14px;color:var(--text-secondary);">' + escapeHtml(item.strength) + '</span></li>';
+              }).join('') +
+            '</ul>' +
+          '</div>';
+        }
+
+        // Section 3 table
+        var tableHeaders = r.optionsAnalysis.map(function (opt) {
+          var badge = opt.optionId === r.recommendedOptionId
+            ? '<span style="display:block;font-size:11px;color:var(--navy-700);margin-top:2px;">가장 높은 적합도</span>'
+            : '';
+          return '<th>' + escapeHtml(opt.optionName) + badge + '</th>';
+        }).join('');
+
+        var costRowCells = d.options.map(function (io) {
+          return '<td>' + escapeHtml(io.costOrTime.trim() || '정보 부족') + '</td>';
+        }).join('');
+
+        var criteriaRows = shares.map(function (p) {
+          var cells = r.optionsAnalysis.map(function (opt) {
+            var cs = opt.criterionScores.find(function (c) { return c.criterionId === p.id || c.criterionName === p.name; });
+            var missing = !cs || cs.insufficientInfo || cs.score === null;
+            if (missing) {
+              return '<td><span style="font-size:12px;color:#6B7280;font-weight:500;">정보 부족</span></td>';
+            }
+            return '<td><span class="mono" style="font-weight:700;color:var(--navy-900);">' + cs.score + ' / 5</span>' +
+              '<p style="margin:4px 0 0;font-size:12px;color:var(--text-muted);">' + escapeHtml(cs.rationale) + '</p></td>';
+          }).join('');
+          return '<tr><td><strong style="color:var(--navy-900);">' + escapeHtml(p.name) + '</strong><span class="tabular-nums" style="display:block;font-size:12px;color:var(--text-muted);">중요도 ' + p.weight + '/5 · 비중 ' + p.sharePercent + '%</span></td>' + cells + '</tr>';
+        }).join('');
+
+        var totalRowCells = r.optionsAnalysis.map(function (opt) {
+          return '<td class="mono" style="font-size:15px;">' + (opt.weightedScore !== null ? opt.weightedScore.toFixed(2) + ' / 5.00' : '정보 부족') + '</td>';
+        }).join('');
+
+        // Section 4 priority score bars
+        var priorityCards = shares.map(function (p) {
+          var bars = r.optionsAnalysis.map(function (opt) {
+            var cs = opt.criterionScores.find(function (c) { return c.criterionId === p.id || c.criterionName === p.name; });
+            var missing = !cs || cs.insufficientInfo || cs.score === null;
+            var pct = missing ? 0 : (cs.score / 5) * 100;
+            var fillColor = opt.optionId === r.recommendedOptionId ? '#14213D' : '#9483C6';
+            return '<div style="margin-bottom:10px;">' +
+              '<div class="flex-between" style="font-size:13px;margin-bottom:4px;">' +
+                '<span style="font-weight:500;color:var(--navy-900);">' + escapeHtml(opt.optionName) + '</span>' +
+                '<span class="mono" style="font-weight:600;color:var(--navy-900);">' + (missing ? '정보 부족' : cs.score + '점') + '</span>' +
+              '</div>' +
+              '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + fillColor + ';"></div></div>' +
+            '</div>';
+          }).join('');
+
+          return '<div class="card stack-sm" style="padding:22px;">' +
+            '<div class="flex-between divider-bottom">' +
+              '<h3 class="h3-card" style="font-size:16px;">' + escapeHtml(p.name) + '</h3>' +
+              '<span class="mono" style="font-size:12px;color:var(--text-muted);">중요도 ' + p.weight + '/5 · 가중치 ' + p.sharePercent + '%</span>' +
+            '</div>' +
+            '<div>' + bars + '</div>' +
+          '</div>';
+        }).join('');
+
+        // Section 5 pros/cons cards
+        var prosConsCards = r.optionsAnalysis.map(function (opt) {
+          var isRec = opt.optionId === r.recommendedOptionId;
+          return '<article class="' + (isRec ? 'card-lavender' : 'card') + ' stack-sm" style="' + (isRec ? 'border-color:var(--lavender-300);' : '') + '">' +
+            '<div class="flex-between divider-bottom">' +
+              '<div>' +
+                '<h3 class="h3-card">' + escapeHtml(opt.optionName) + '</h3>' +
+                (isRec ? '<p style="margin:2px 0 0;font-size:12px;font-weight:600;color:var(--navy-700);">우선순위 기준 추천 선택지</p>' : '') +
+              '</div>' +
+              '<span class="mono" style="font-size:14px;font-weight:700;color:var(--navy-900);">' + (opt.weightedScore !== null ? opt.weightedScore.toFixed(2) + '점' : '정보 부족') + '</span>' +
+            '</div>' +
+            '<div class="grid-2" style="font-size:14px;">' +
+              '<div>' +
+                '<h4 style="margin:0 0 6px;font-size:12px;color:var(--success);">장점</h4>' +
+                '<ul style="margin:0;padding-left:18px;color:var(--text-secondary);">' +
+                  opt.pros.map(function (pro) { return '<li style="margin-bottom:4px;">' + escapeHtml(pro) + '</li>'; }).join('') +
+                '</ul>' +
+              '</div>' +
+              '<div>' +
+                '<h4 style="margin:0 0 6px;font-size:12px;color:#991B1B;">단점 및 유의점</h4>' +
+                '<ul style="margin:0;padding-left:18px;color:var(--text-secondary);">' +
+                  opt.cons.map(function (con) { return '<li style="margin-bottom:4px;">' + escapeHtml(con) + '</li>'; }).join('') +
+                '</ul>' +
+              '</div>' +
+            '</div>' +
+            '<div class="divider-top stack-xs" style="font-size:14px;">' +
+              '<div><span style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;">우선순위 적합성</span><p style="margin:2px 0 0;">' + escapeHtml(opt.priorityFit) + '</p></div>' +
+              '<div><span style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;">예상되는 결과</span><p style="margin:2px 0 0;color:var(--text-secondary);">' + escapeHtml(opt.expectedOutcome) + '</p></div>' +
+            '</div>' +
+          '</article>';
+        }).join('');
+
+        // Section 6 Future simulation tabs
+        var simTabs = r.optionsAnalysis.map(function (opt) {
+          var active = opt.optionId === simOpt.optionId;
+          return '<button type="button" role="tab" aria-selected="' + active + '" class="tab-btn' + (active ? ' active' : '') + '" data-sim-tab="' + escapeHtml(opt.optionId) + '">' + escapeHtml(opt.optionName) + '</button>';
+        }).join('');
+
+        // Section 7 Regret check questions
+        var regretQHtml = r.regretCheckQuestions.map(function (q, idx) {
+          var val = state.regretAnswers[q.id] || '';
+          return '<div>' +
+            '<label class="field-label" for="regret-q-' + escapeHtml(q.id) + '">Q' + (idx + 1) + '. ' + escapeHtml(q.question) + '</label>' +
+            '<textarea id="regret-q-' + escapeHtml(q.id) + '" rows="2" class="textarea" data-regret-id="' + escapeHtml(q.id) + '" placeholder="' + escapeHtml(q.placeholder) + '">' + escapeHtml(val) + '</textarea>' +
+          '</div>';
+        }).join('');
+
+        var regretFeedbackHtml = '';
+        if (state.regretFeedback) {
+          var fb = state.regretFeedback;
+          regretFeedbackHtml = '<div class="card-lavender stack-sm" style="border-color:var(--lavender-200);">' +
+            '<div>' +
+              '<h3 class="h3-card">후회 방지 점검 결과</h3>' +
+              '<p style="margin:6px 0 0;color:var(--text-secondary);">' + escapeHtml(fb.adviceSummary) + '</p>' +
+            '</div>' +
+            '<div class="grid-2 divider-top" style="font-size:14px;">' +
+              '<div><h4 style="margin:0 0 8px;font-size:14px;color:var(--navy-900);">최종 점검 사항</h4><ul style="margin:0;padding-left:18px;color:var(--text-secondary);">' +
+                fb.finalChecklist.map(function (it) { return '<li style="margin-bottom:6px;">' + escapeHtml(it) + '</li>'; }).join('') +
+              '</ul></div>' +
+              '<div><h4 style="margin:0 0 8px;font-size:14px;color:var(--navy-900);">후회를 줄이기 위한 조언</h4><ul style="margin:0;padding-left:18px;color:var(--text-secondary);">' +
+                fb.regretMitigationTips.map(function (it) { return '<li style="margin-bottom:6px;">' + escapeHtml(it) + '</li>'; }).join('') +
+              '</ul></div>' +
+            '</div>' +
+            '<p class="divider-top" style="margin:0;font-size:14px;font-weight:600;color:var(--navy-700);">' + escapeHtml(fb.readinessNote) + '</p>' +
+          '</div>';
+        }
+
+        // Section 8 Final choice selector
+        var choiceBtns = r.optionsAnalysis.map(function (opt) {
+          var sel = opt.optionId === state.selectedFinalOptionId;
+          return '<button type="button" class="btn ' + (sel ? 'btn-primary' : 'btn-secondary') + ' btn-sm" style="min-height:42px;padding:8px 16px;" data-select-final="' + escapeHtml(opt.optionId) + '">' +
+            escapeHtml(opt.optionName) + (opt.optionId === r.recommendedOptionId ? ' (추천)' : '') +
+          '</button>';
+        }).join('');
+
+        var confirmBanner = '';
+        if (state.confirmedOptionName) {
+          confirmBanner = '<div role="status" class="alert-box alert-success">' +
+            '<div class="flex-row" style="gap:8px;font-weight:600;">' + ICONS.check + '<span>‘' + escapeHtml(state.confirmedOptionName) + '’(으)로 최종 선택이 확정되었습니다. 결정 기록에도 저장되었습니다.</span></div>' +
+            '<button type="button" class="text-link" style="color:var(--success);font-size:13px;" data-nav="history">결정 기록에서 보기 →</button>' +
+          '</div>';
+        }
+
+        return '<div class="container-results page-section stack-md">' +
+          '<div class="stack-xs">' +
+            '<div class="flex-row" style="font-size:12px;color:var(--text-muted);gap:8px;">' +
+              '<span>분석 완료</span><span aria-hidden="true">·</span>' +
+              '<span>' + escapeHtml(d.title) + '</span><span aria-hidden="true">·</span>' +
+              '<span class="tabular-nums">선택지 ' + r.optionsAnalysis.length + '개</span><span aria-hidden="true">·</span>' +
+              '<span>참고용 추정치</span>' +
+            '</div>' +
+            noticesHtml +
+          '</div>' +
+
+          '<!-- 1. 가장 추천하는 선택지 -->' +
+          '<section aria-labelledby="sec-recommended">' +
+            '<div class="card-navy stack-sm">' +
+              '<div class="flex-between" style="border-bottom:1px solid rgba(255,255,255,0.16);padding-bottom:20px;">' +
+                '<div class="stack-xs">' +
+                  '<p class="flex-row" style="gap:6px;margin:0;font-size:13px;color:var(--lavender-200);">' + compassSvg() + '<span>1. 우선순위 가중치 기준 가장 적합한 선택지</span></p>' +
+                  '<h1 id="sec-recommended" style="margin:4px 0 0;font-size:clamp(1.5rem,3vw,2rem);font-weight:700;">' + escapeHtml(recOpt.optionName) + '</h1>' +
+                '</div>' +
+                '<div style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.16);border-radius:12px;padding:12px 20px;">' +
+                  '<p style="margin:0;font-size:12px;color:var(--lavender-200);">가중 평균 점수 (참고용 추정)</p>' +
+                  '<p class="mono" style="margin:4px 0 0;font-size:24px;font-weight:700;">' + (recOpt.weightedScore !== null ? recOpt.weightedScore.toFixed(2) + ' / 5.00' : '정보 부족') + '</p>' +
+                '</div>' +
+              '</div>' +
+              '<p style="margin:0;color:var(--lavender-100);line-height:1.65;">' + escapeHtml(recOpt.priorityFit || recOpt.expectedOutcome) + '</p>' +
+            '</div>' +
+          '</section>' +
+
+          '<!-- 2. 추천 이유 -->' +
+          '<section aria-labelledby="sec-reason" class="stack-sm">' +
+            '<h2 id="sec-reason" class="h2-section">2. 상황 분석 및 추천 이유</h2>' +
+            '<div class="grid-reason">' +
+              '<div class="card stack-sm">' +
+                '<div><h3 class="h3-card" style="font-size:16px;">전체 고민 상황 분석</h3><p style="margin:8px 0 0;color:var(--text-secondary);line-height:1.65;">' + escapeHtml(r.situationAnalysis) + '</p></div>' +
+                '<div class="divider-top"><h3 class="h3-card" style="font-size:16px;">‘' + escapeHtml(recOpt.optionName) + '’을(를) 추천하는 이유</h3><p style="margin:8px 0 0;color:var(--text-secondary);line-height:1.65;">' + escapeHtml(r.recommendationReason) + '</p></div>' +
+              '</div>' +
+              '<div class="stack-sm">' +
+                otherStrengthsHtml +
+                '<div class="card stack-xs">' +
+                  '<h3 class="h3-card" style="font-size:16px;">결정 전 추가로 확인하면 좋은 정보</h3>' +
+                  '<ul style="margin:8px 0 0;padding-left:18px;font-size:14px;color:var(--text-secondary);">' +
+                    r.infoToVerify.map(function (info) { return '<li style="margin-bottom:6px;">' + escapeHtml(info) + '</li>'; }).join('') +
+                  '</ul>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+          '</section>' +
+
+          '<!-- 3. 선택지별 비교표 -->' +
+          '<section aria-labelledby="sec-table" class="stack-sm">' +
+            '<div>' +
+              '<h2 id="sec-table" class="h2-section">3. 선택지별 종합 비교표</h2>' +
+              '<p class="muted" style="margin-top:4px;">각 기준 점수는 1~5점 척도이며, 정보가 부족한 항목은 추정하지 않고 ‘정보 부족’으로 표시됩니다.</p>' +
+            '</div>' +
+            '<div class="table-wrap">' +
+              '<table class="compare-table">' +
+                '<thead><tr><th>비교 기준 (중요도)</th>' + tableHeaders + '</tr></thead>' +
+                '<tbody>' +
+                  '<tr><td><strong style="color:var(--navy-900);">예상 비용 / 시간</strong></td>' + costRowCells + '</tr>' +
+                  criteriaRows +
+                  '<tr><td>가중 평균 최종 점수</td>' + totalRowCells + '</tr>' +
+                '</tbody>' +
+              '</table>' +
+            '</div>' +
+          '</section>' +
+
+          '<!-- 4. 우선순위별 점수 -->' +
+          '<section aria-labelledby="sec-priority-scores" class="stack-sm">' +
+            '<div>' +
+              '<h2 id="sec-priority-scores" class="h2-section">4. 우선순위별 점수 비교</h2>' +
+              '<p class="muted" style="margin-top:4px;">내가 중요하게 설정한 기준마다 각 선택지가 어떤 균형을 보이는지 한눈에 확인해 보세요.</p>' +
+            '</div>' +
+            '<div class="grid-2">' + priorityCards + '</div>' +
+          '</section>' +
+
+          '<!-- 5. 각 선택지의 장단점 -->' +
+          '<section aria-labelledby="sec-pros-cons" class="stack-sm">' +
+            '<h2 id="sec-pros-cons" class="h2-section">5. 각 선택지의 장단점 및 예상 결과</h2>' +
+            '<div class="grid-2">' + prosConsCards + '</div>' +
+          '</section>' +
+
+          '<!-- 6. 미래의 나 시뮬레이션 -->' +
+          '<section aria-labelledby="sec-future-sim" class="stack-sm">' +
+            '<div>' +
+              '<h2 id="sec-future-sim" class="h2-section">6. 미래의 나 시뮬레이션</h2>' +
+              '<p class="muted" style="margin-top:4px;">특정 선택을 했을 때 펼쳐질 수 있는 시나리오입니다. 미래를 확정적으로 예언하지 않으며, 입력된 사실과 추론을 구분해 보여드립니다.</p>' +
+            '</div>' +
+            '<div role="tablist" aria-label="시뮬레이션 대상 선택지" class="tablist">' + simTabs + '</div>' +
+            '<div class="card stack-md">' +
+              '<div class="flex-between divider-bottom">' +
+                '<h3 class="h3-card">‘' + escapeHtml(simOpt.optionName) + '’ 선택 시 예상 시나리오</h3>' +
+                '<span class="muted" style="font-size:12px;">가능성 탐색용 참고 시나리오 (확정 예측 아님)</span>' +
+              '</div>' +
+              '<div class="grid-2" style="font-size:14px;">' +
+                '<div class="sim-block-ivory"><h4 style="margin:0 0 8px;color:var(--success);">예상되는 긍정적인 결과</h4><ul style="margin:0;padding-left:18px;color:var(--text-secondary);">' +
+                  simOpt.futureSimulation.positiveOutcomes.map(function (x) { return '<li style="margin-bottom:6px;">' + escapeHtml(x) + '</li>'; }).join('') +
+                '</ul></div>' +
+                '<div class="sim-block-ivory"><h4 style="margin:0 0 8px;color:#991B1B;">예상되는 부정적인 결과</h4><ul style="margin:0;padding-left:18px;color:var(--text-secondary);">' +
+                  simOpt.futureSimulation.negativeOutcomes.map(function (x) { return '<li style="margin-bottom:6px;">' + escapeHtml(x) + '</li>'; }).join('') +
+                '</ul></div>' +
+                '<div class="sim-block-lavender"><h4 style="margin:0 0 8px;color:var(--navy-900);">장기적으로 고려해야 하는 사항</h4><ul style="margin:0;padding-left:18px;color:var(--text-secondary);">' +
+                  simOpt.futureSimulation.longTermConsiderations.map(function (x) { return '<li style="margin-bottom:6px;">' + escapeHtml(x) + '</li>'; }).join('') +
+                '</ul></div>' +
+                '<div class="sim-block-lavender"><h4 style="margin:0 0 8px;color:var(--navy-900);">선택하기 전에 확인할 내용</h4><ul style="margin:0;padding-left:18px;color:var(--text-secondary);">' +
+                  simOpt.futureSimulation.thingsToCheck.map(function (x) { return '<li style="margin-bottom:6px;">' + escapeHtml(x) + '</li>'; }).join('') +
+                '</ul></div>' +
+              '</div>' +
+              '<div class="grid-2 divider-top" style="font-size:13px;">' +
+                '<div><h4 style="margin:0 0 6px;color:var(--navy-900);">입력 정보에 근거한 확실한 사실</h4><ul style="margin:0;padding-left:18px;color:#4B5568;">' +
+                  simOpt.futureSimulation.confirmedFacts.map(function (x) { return '<li style="margin-bottom:4px;">' + escapeHtml(x) + '</li>'; }).join('') +
+                '</ul></div>' +
+                '<div><h4 style="margin:0 0 6px;color:var(--navy-700);">분석 가정 및 추론 영역</h4><ul style="margin:0;padding-left:18px;color:#4B5568;">' +
+                  simOpt.futureSimulation.aiAssumptions.map(function (x) { return '<li style="margin-bottom:4px;">' + escapeHtml(x) + '</li>'; }).join('') +
+                '</ul></div>' +
+              '</div>' +
+            '</div>' +
+          '</section>' +
+
+          '<!-- 7. 후회 방지 체크 -->' +
+          '<section aria-labelledby="sec-regret-check" class="stack-sm">' +
+            '<div>' +
+              '<div class="flex-row" style="gap:6px;font-size:14px;font-weight:600;color:var(--navy-700);">' + ICONS.shield + '<span>최종 확정 전 셀프 점검</span></div>' +
+              '<h2 id="sec-regret-check" class="h2-section" style="margin-top:4px;">7. 후회 방지 체크</h2>' +
+              '<p class="muted" style="margin-top:4px;">현재 염두에 둔 선택지(<strong style="color:var(--navy-900);">' + escapeHtml(candidateOpt.optionName) + '</strong>)를 기준으로 아래 질문에 답해 보세요. 답변을 바탕으로 놓치기 쉬운 점검 포인트를 짚어드립니다.</p>' +
+            '</div>' +
+            '<form id="regret-check-form" class="card stack-sm">' +
+              '<div class="grid-2">' + regretQHtml + '</div>' +
+              (state.regretError ? '<p role="alert" class="error-text">' + escapeHtml(state.regretError) + '</p>' : '') +
+              '<div style="display:flex;justify-content:flex-end;">' +
+                '<button type="submit" class="btn btn-lavender">' + ICONS.sparkles + '<span>후회 방지 점검 받기</span></button>' +
+              '</div>' +
+            '</form>' +
+            regretFeedbackHtml +
+          '</section>' +
+
+          '<!-- 8. 최종 선택 버튼 -->' +
+          '<section aria-labelledby="sec-final-action" class="card stack-sm">' +
+            '<div>' +
+              '<h2 id="sec-final-action" class="h2-section">8. 최종 선택 확정 및 기록하기</h2>' +
+              '<p class="muted" style="margin-top:4px;">분석 내용을 참고하여 직접 최종 선택지를 고르고, 결정 기록으로 남겨보세요.</p>' +
+            '</div>' +
+            '<div class="flex-row">' + choiceBtns + '</div>' +
+            confirmBanner +
+            '<div class="divider-top flex-row">' +
+              '<button type="button" class="btn btn-primary" data-action="confirm-decision">' + ICONS.check + '<span>이 선택으로 결정하기</span></button>' +
+              '<button type="button" class="btn btn-lavender" data-action="save-record">' + ICONS.bookmark + '<span>' + (state.currentRecordId ? '선택 기록 업데이트하기' : '선택 기록 저장하기') + '</span></button>' +
+              '<button type="button" class="btn btn-secondary" data-action="reanalyze">' + ICONS.reset + '<span>다시 분석하기</span></button>' +
+              '<button type="button" class="btn btn-secondary" style="background:var(--ivory-50);" data-nav="home">' + ICONS.home + '<span>홈으로 돌아가기</span></button>' +
+            '</div>' +
+          '</section>' +
+        '</div>';
+      }
+
+      function renderHistoryView() {
+        var q = state.historySearch.trim().toLowerCase();
+        var filtered = state.records.filter(function (rec) {
+          if (!q) return true;
+          return rec.title.toLowerCase().indexOf(q) !== -1 ||
+            rec.finalDecision.toLowerCase().indexOf(q) !== -1 ||
+            rec.recommendedOption.toLowerCase().indexOf(q) !== -1 ||
+            (rec.review || '').toLowerCase().indexOf(q) !== -1;
+        });
+
+        var searchHtml = state.records.length > 0
+          ? '<div style="position:relative;">' +
+              '<span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#6B7280;display:flex;">' + ICONS.search + '</span>' +
+              '<input id="history-search-input" type="search" class="input" style="padding-left:40px;background:#FFFFFF;" value="' + escapeHtml(state.historySearch) + '" aria-label="결정 기록 검색" placeholder="고민 제목, 최종 선택, 후기 내용으로 검색..." />' +
+            '</div>'
+          : '';
+
+        var bodyHtml = '';
+        if (state.records.length === 0) {
+          bodyHtml = '<div class="card stack-sm" style="text-align:center;padding:48px 24px;">' +
+            '<div class="feature-icon-box" style="margin:0 auto;">' + ICONS.book + '</div>' +
+            '<h2 class="h3-card">아직 저장된 결정 기록이 없습니다</h2>' +
+            '<p class="muted" style="max-width:420px;margin:0 auto;line-height:1.6;">새로운 고민을 분석한 뒤 ‘선택 기록 저장하기’를 누르면 이곳에 자동으로 보관되며, 언제든지 만족도와 후기를 남길 수 있습니다.</p>' +
+            '<div class="flex-row" style="justify-content:center;padding-top:8px;">' +
+              '<button type="button" class="btn btn-primary" data-action="start-new">새로운 고민 시작하기</button>' +
+              '<button type="button" class="btn btn-lavender" data-action="seed-sample-record">예시 기록 1건 추가해 보기</button>' +
+            '</div>' +
+          '</div>';
+        } else if (filtered.length === 0) {
+          bodyHtml = '<div class="card" style="text-align:center;padding:40px;"><p style="margin:0;font-weight:700;">검색 결과가 없습니다</p><p class="muted" style="margin-top:6px;">다른 검색어로 다시 찾아보세요.</p></div>';
+        } else {
+          bodyHtml = '<div class="stack-sm">' + filtered.map(function (rec) {
+            var isEditing = state.editingRecordId === rec.id;
+            var isConfirmDel = state.confirmDeleteId === rec.id;
+
+            var actionControls = '';
+            if (!isEditing) {
+              actionControls = '<div class="flex-row" style="gap:8px;">' +
+                '<button type="button" class="btn btn-lavender btn-sm" data-edit-record="' + escapeHtml(rec.id) + '" aria-label="‘' + escapeHtml(rec.title) + '’ 기록 수정">' + ICONS.edit + '<span>복기 수정</span></button>' +
+                (!isConfirmDel
+                  ? '<button type="button" class="btn btn-secondary btn-sm" style="color:#6B7280;" data-ask-delete="' + escapeHtml(rec.id) + '" aria-label="‘' + escapeHtml(rec.title) + '’ 기록 삭제">' + ICONS.trash + '<span>삭제</span></button>'
+                  : '<button type="button" class="btn btn-danger-solid" data-confirm-delete="' + escapeHtml(rec.id) + '">삭제 확인</button>' +
+                    '<button type="button" class="btn btn-secondary btn-sm" data-cancel-delete="1">취소</button>') +
+              '</div>';
+            }
+
+            var starsHtml = '';
+            if (rec.satisfaction !== null) {
+              starsHtml = '<div class="flex-row" style="gap:4px;">' +
+                [1, 2, 3, 4, 5].map(function (s) { return s <= rec.satisfaction ? ICONS.starFilled : ICONS.starEmpty; }).join('') +
+                '<span class="mono" style="margin-left:6px;font-weight:600;">' + rec.satisfaction + ' / 5점</span>' +
+              '</div>';
+            } else {
+              starsHtml = '<p class="muted" style="font-size:12px;">아직 만족도를 기록하지 않았습니다. ‘복기 수정’에서 점수를 남겨보세요.</p>';
+            }
+
+            var rightCol = !isEditing
+              ? '<div class="sim-block-ivory stack-xs">' +
+                  '<div><span style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;">나의 최종 결정</span><strong style="font-size:16px;color:var(--navy-900);">' + escapeHtml(rec.finalDecision) + '</strong></div>' +
+                  '<div><span style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:4px;">실제 만족도</span>' + starsHtml + '</div>' +
+                  '<div><span style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;">간단한 후기</span><p style="margin:4px 0 0;font-size:14px;color:var(--text-secondary);">' + escapeHtml(rec.review && rec.review.trim() ? rec.review : '아직 작성된 후기가 없습니다.') + '</p></div>' +
+                '</div>'
+              : '<form class="sim-block-lavender stack-xs" data-save-edit-form="' + escapeHtml(rec.id) + '">' +
+                  '<div>' +
+                    '<label class="field-label" style="font-size:12px;" for="edit-decision-' + escapeHtml(rec.id) + '">최종 결정</label>' +
+                    '<select id="edit-decision-' + escapeHtml(rec.id) + '" class="select" style="background:#FFFFFF;" data-edit-decision="1">' +
+                      rec.options.map(function (o) {
+                        return '<option value="' + escapeHtml(o) + '"' + (state.editFinalDecision === o ? ' selected' : '') + '>' + escapeHtml(o) + '</option>';
+                      }).join('') +
+                    '</select>' +
+                  '</div>' +
+                  '<div>' +
+                    '<span class="field-label" style="font-size:12px;">실제 만족도 (1~5점)</span>' +
+                    '<div class="flex-row" style="gap:6px;">' +
+                      [1, 2, 3, 4, 5].map(function (s) {
+                        var active = state.editSatisfaction === s;
+                        return '<button type="button" class="btn btn-sm ' + (active ? 'btn-primary' : 'btn-secondary') + '" data-set-sat="' + s + '" aria-label="만족도 ' + s + '점">' + s + '점</button>';
+                      }).join('') +
+                    '</div>' +
+                  '</div>' +
+                  '<div>' +
+                    '<label class="field-label" style="font-size:12px;" for="edit-review-' + escapeHtml(rec.id) + '">간단한 후기</label>' +
+                    '<textarea id="edit-review-' + escapeHtml(rec.id) + '" rows="3" class="textarea" style="background:#FFFFFF;" data-edit-review="1" placeholder="결정 이후 실제로 어땠는지, 다음에는 무엇을 참고하고 싶은지 기록해 보세요.">' + escapeHtml(state.editReview) + '</textarea>' +
+                  '</div>' +
+                  '<div class="flex-row" style="justify-content:flex-end;gap:8px;">' +
+                    '<button type="button" class="btn btn-secondary btn-sm" data-cancel-edit="1">취소</button>' +
+                    '<button type="submit" class="btn btn-primary btn-sm">저장하기</button>' +
+                  '</div>' +
+                '</form>';
+
+            return '<article class="card stack-sm">' +
+              '<div class="flex-between divider-bottom">' +
+                '<div>' +
+                  '<div class="flex-row" style="font-size:12px;color:var(--text-muted);gap:8px;margin-bottom:4px;">' +
+                    '<span>' + escapeHtml(formatKoreanDate(rec.createdAt)) + '</span><span aria-hidden="true">·</span>' +
+                    '<span class="tabular-nums">선택지 ' + rec.options.length + '개</span><span aria-hidden="true">·</span>' +
+                    '<span>실제 만족도 ' + (rec.satisfaction !== null ? '<strong class="mono" style="color:var(--navy-900);">' + rec.satisfaction + ' / 5점</strong>' : '미기록') + '</span>' +
+                  '</div>' +
+                  '<h2 class="h3-card">' + escapeHtml(rec.title) + '</h2>' +
+                '</div>' +
+                actionControls +
+              '</div>' +
+              '<div class="grid-2" style="font-size:14px;">' +
+                '<div class="stack-xs">' +
+                  '<div><span style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;">검토했던 선택지</span><p style="margin:2px 0 0;">' + escapeHtml(rec.options.join(' · ')) + '</p></div>' +
+                  '<div><span style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;">당시 추천 결과</span><p style="margin:2px 0 0;font-weight:600;color:var(--navy-700);">' + escapeHtml(rec.recommendedOption) + '</p></div>' +
+                  '<div><span style="font-size:12px;font-weight:600;color:var(--text-muted);display:block;">당시의 추천 이유</span><p style="margin:2px 0 0;color:var(--text-secondary);line-height:1.6;">' + escapeHtml(rec.recommendationReason) + '</p></div>' +
+                '</div>' +
+                rightCol +
+              '</div>' +
+            '</article>';
+          }).join('') + '</div>';
+        }
+
+        return '<div class="container-results page-section stack-md" style="max-width:1000px;">' +
+          '<div class="flex-between">' +
+            '<div>' +
+              '<h1 class="h1-page">이전 결정 기록 및 복기</h1>' +
+              '<p class="muted" style="margin-top:4px;">과거의 고민과 실제 만족도를 돌아보며 나만의 의사결정 기준을 다듬어 보세요.</p>' +
+            '</div>' +
+            '<button type="button" class="btn btn-primary btn-sm" style="padding:10px 18px;min-height:42px;" data-action="start-new">' + ICONS.plus + '<span>새로운 고민 기록하기</span></button>' +
+          '</div>' +
+          searchHtml +
+          bodyHtml +
+        '</div>';
+      }
+
+      function render() {
+        renderHeader();
+        var main = document.getElementById('app-main');
+        if (state.view === 'home') {
+          main.innerHTML = renderHomeView();
+        } else if (state.view === 'input') {
+          main.innerHTML = renderInputView();
+        } else if (state.view === 'priorities') {
+          main.innerHTML = renderPrioritiesView();
+        } else if (state.view === 'clarify') {
+          main.innerHTML = renderClarifyView();
+        } else if (state.view === 'analyzing') {
+          main.innerHTML = renderAnalyzingView();
+        } else if (state.view === 'results' && state.analysisResult) {
+          main.innerHTML = renderResultsView();
+        } else {
+          main.innerHTML = renderHistoryView();
+        }
+      }
+
+      /* =========================================================
+       * 7. Delegated Event Handling (Smooth, Zero-Flicker)
+       * ========================================================= */
+      document.addEventListener('click', function (e) {
+        var target = e.target.closest('button');
+        if (!target) return;
+
+        if (target.dataset.nav) {
+          navigate(target.dataset.nav);
+          return;
+        }
+        if (target.dataset.preset) {
+          loadPreset(target.dataset.preset);
+          return;
+        }
+
+        var action = target.dataset.action;
+        if (action === 'start-new') { startNew(); return; }
+        if (action === 'reset-input') {
+          state.dilemma = createEmptyDilemma();
+          state.inputErrors = null;
+          state.inputSummaryErrors = [];
+          render();
+          return;
+        }
+        if (action === 'add-option') {
+          if (state.dilemma.options.length < 5) {
+            state.dilemma.options.push({
+              id: 'opt-' + Date.now() + '-' + (state.dilemma.options.length + 1),
+              name: '',
+              features: '',
+              costOrTime: ''
+            });
+            render();
+          }
+          return;
+        }
+        if (action === 'reset-priorities') {
+          state.priorities = clone(DEFAULT_PRIORITIES);
+          state.priorityAddError = null;
+          render();
+          return;
+        }
+        if (action === 'start-analysis') { startAnalysisFlow(); return; }
+        if (action === 'skip-clarify') { runFullAnalysis([]); return; }
+        if (action === 'submit-clarify') { runFullAnalysis(state.clarifyingQuestions); return; }
+        if (action === 'confirm-decision') {
+          var chosen = state.analysisResult.optionsAnalysis.find(function (o) {
+            return o.optionId === state.selectedFinalOptionId;
+          }) || state.analysisResult.optionsAnalysis[0];
+          state.confirmedOptionName = chosen.optionName;
+          upsertCurrentRecord(chosen.optionName);
+          render();
+          return;
+        }
+        if (action === 'save-record') {
+          var cand = state.analysisResult.optionsAnalysis.find(function (o) {
+            return o.optionId === state.selectedFinalOptionId;
+          }) || state.analysisResult.optionsAnalysis[0];
+          upsertCurrentRecord(state.confirmedOptionName || cand.optionName);
+          render();
+          return;
+        }
+        if (action === 'reanalyze') { runFullAnalysis(state.clarifyingQuestions); return; }
+        if (action === 'seed-sample-record') {
+          var now = new Date().toISOString();
+          var sample = {
+            id: 'sample-' + Date.now(),
+            title: '평일 점심 구독 도시락 vs 직접 도시락 싸기',
+            createdAt: now,
+            updatedAt: now,
+            options: ['건강식 정기 구독 도시락', '주 3회 집밥 도시락 준비', '회사 근처 일반 식사'],
+            recommendedOption: '건강식 정기 구독 도시락',
+            recommendationReason: '시간 절약과 지속 가능성 우선순위가 높은 상황에서, 조리 부담 없이 영양 균형을 유지할 수 있어 가장 안정적인 선택으로 평가되었습니다.',
+            finalDecision: '건강식 정기 구독 도시락',
+            satisfaction: 4,
+            review: '아침 준비 시간이 크게 줄어서 만족스럽지만, 가끔 메뉴가 겹칠 때는 외식과 병행하고 있습니다.'
+          };
+          state.records = [sample].concat(state.records);
+          persistRecords(state.records);
+          render();
+          return;
+        }
+
+        if (target.dataset.removeOption) {
+          if (state.dilemma.options.length > 2) {
+            state.dilemma.options = state.dilemma.options.filter(function (o) {
+              return o.id !== target.dataset.removeOption;
+            });
+            render();
+          }
+          return;
+        }
+
+        if (target.dataset.deletePriority) {
+          if (state.priorities.length > 1) {
+            state.priorities = state.priorities.filter(function (p) {
+              return p.id !== target.dataset.deletePriority;
+            });
+            render();
+          }
+          return;
+        }
+
+        if (target.dataset.simTab) {
+          state.simActiveOptionId = target.dataset.simTab;
+          render();
+          return;
+        }
+
+        if (target.dataset.selectFinal) {
+          state.selectedFinalOptionId = target.dataset.selectFinal;
+          render();
+          return;
+        }
+
+        if (target.dataset.editRecord) {
+          var rec = state.records.find(function (r) { return r.id === target.dataset.editRecord; });
+          if (rec) {
+            state.editingRecordId = rec.id;
+            state.confirmDeleteId = null;
+            state.editFinalDecision = rec.finalDecision;
+            state.editSatisfaction = rec.satisfaction;
+            state.editReview = rec.review || '';
+            render();
+          }
+          return;
+        }
+
+        if (target.dataset.cancelEdit) {
+          state.editingRecordId = null;
+          render();
+          return;
+        }
+
+        if (target.dataset.setSat) {
+          state.editSatisfaction = Number(target.dataset.setSat);
+          render();
+          return;
+        }
+
+        if (target.dataset.askDelete) {
+          state.confirmDeleteId = target.dataset.askDelete;
+          render();
+          return;
+        }
+
+        if (target.dataset.cancelDelete) {
+          state.confirmDeleteId = null;
+          render();
+          return;
+        }
+
+        if (target.dataset.confirmDelete) {
+          var delId = target.dataset.confirmDelete;
+          state.records = state.records.filter(function (r) { return r.id !== delId; });
+          persistRecords(state.records);
+          state.confirmDeleteId = null;
+          if (state.currentRecordId === delId) state.currentRecordId = null;
+          render();
+          return;
+        }
+      });
+
+      document.addEventListener('input', function (e) {
+        var el = e.target;
+
+        if (el.dataset && el.dataset.dilemmaField) {
+          state.dilemma[el.dataset.dilemmaField] = el.value;
+          return;
+        }
+        if (el.dataset && el.dataset.optField && el.dataset.optId) {
+          var opt = state.dilemma.options.find(function (o) { return o.id === el.dataset.optId; });
+          if (opt) opt[el.dataset.optField] = el.value;
+          return;
+        }
+        if (el.dataset && el.dataset.prioritySlider) {
+          var pId = el.dataset.prioritySlider;
+          var val = Number(el.value);
+          var p = state.priorities.find(function (item) { return item.id === pId; });
+          if (p) {
+            p.weight = val;
+            // Live-update slider text & share percents without destroying slider focus
+            var WEIGHT_LABELS = { 1: '거의 중요하지 않음', 2: '조금 중요함', 3: '보통', 4: '중요함', 5: '매우 중요함' };
+            var shares = calculateWeightShares(state.priorities);
+            shares.forEach(function (item) {
+              var sEl = document.querySelector('[data-share-for="' + item.id + '"]');
+              if (sEl) sEl.textContent = '반영 비중 ' + item.sharePercent + '% · ' + WEIGHT_LABELS[item.weight];
+              var wEl = document.querySelector('[data-weight-label="' + item.id + '"]');
+              if (wEl) wEl.textContent = item.weight + ' / 5';
+            });
+          }
+          return;
+        }
+        if (el.id === 'new-priority-input') {
+          state.newCriterionName = el.value;
+          state.priorityAddError = null;
+          return;
+        }
+        if (el.id === 'new-priority-weight') {
+          state.newCriterionWeight = Number(el.value);
+          return;
+        }
+        if (el.dataset && el.dataset.clarifyIdx !== undefined) {
+          var idx = Number(el.dataset.clarifyIdx);
+          if (state.clarifyingQuestions[idx]) {
+            state.clarifyingQuestions[idx].answer = el.value;
+          }
+          return;
+        }
+        if (el.dataset && el.dataset.regretId) {
+          state.regretAnswers[el.dataset.regretId] = el.value;
+          state.regretError = null;
+          return;
+        }
+        if (el.id === 'history-search-input') {
+          state.historySearch = el.value;
+          var pos = el.selectionStart;
+          render();
+          var nextInput = document.getElementById('history-search-input');
+          if (nextInput) {
+            nextInput.focus();
+            try { nextInput.setSelectionRange(pos, pos); } catch (err) {}
+          }
+          return;
+        }
+        if (el.dataset && el.dataset.editDecision) {
+          state.editFinalDecision = el.value;
+          return;
+        }
+        if (el.dataset && el.dataset.editReview) {
+          state.editReview = el.value;
+          return;
+        }
+      });
+
+      document.addEventListener('submit', function (e) {
+        var form = e.target;
+
+        if (form.id === 'dilemma-form') {
+          e.preventDefault();
+          var validation = validateDilemmaInput(state.dilemma);
+          if (!validation.isValid) {
+            state.inputErrors = validation.errors;
+            state.inputSummaryErrors = validation.summaryMessages;
+            render();
+            scrollTop();
+            return;
+          }
+          state.inputErrors = null;
+          state.inputSummaryErrors = [];
+          navigate('priorities');
+          return;
+        }
+
+        if (form.id === 'add-priority-form') {
+          e.preventDefault();
+          var err = validateNewPriorityName(state.newCriterionName, state.priorities);
+          if (err) {
+            state.priorityAddError = err;
+            render();
+            return;
+          }
+          state.priorities.push({
+            id: 'custom-' + Date.now(),
+            name: state.newCriterionName.trim(),
+            weight: state.newCriterionWeight,
+            isDefault: false
+          });
+          state.newCriterionName = '';
+          state.newCriterionWeight = 3;
+          state.priorityAddError = null;
+          render();
+          return;
+        }
+
+        if (form.id === 'regret-check-form') {
+          e.preventDefault();
+          var r = state.analysisResult;
+          var answers = r.regretCheckQuestions.map(function (q) {
+            return { question: q.question, answer: state.regretAnswers[q.id] || '' };
+          });
+          var hasAny = answers.some(function (a) { return a.answer.trim().length > 0; });
+          if (!hasAny) {
+            state.regretError = '최소 1개 이상의 질문에 현재 생각을 적어 주세요.';
+            render();
+            return;
+          }
+          var cand = r.optionsAnalysis.find(function (o) {
+            return o.optionId === state.selectedFinalOptionId;
+          }) || r.optionsAnalysis[0];
+          state.regretError = null;
+          state.regretFeedback = generateRegretFeedback(state.dilemma.title, cand.optionName, answers);
+          render();
+          return;
+        }
+
+        if (form.dataset && form.dataset.saveEditForm) {
+          e.preventDefault();
+          var recId = form.dataset.saveEditForm;
+          state.records = state.records.map(function (rec) {
+            if (rec.id !== recId) return rec;
+            return Object.assign({}, rec, {
+              finalDecision: state.editFinalDecision.trim() || rec.finalDecision,
+              satisfaction: state.editSatisfaction,
+              review: state.editReview.trim(),
+              updatedAt: new Date().toISOString()
+            });
+          });
+          persistRecords(state.records);
+          state.editingRecordId = null;
+          render();
+          return;
+        }
+      });
+
+      // Initial render
+      render();
+    })();
+  </script>
+</body>
+</html>
